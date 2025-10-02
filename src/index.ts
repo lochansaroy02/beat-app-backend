@@ -30,14 +30,10 @@ app.get("/", async (req: Request, res: Response) => {
 
 
 
-app.listen(8080, () => {
-    console.log(`Server is running on port ${8080}`);
-});
-
 
 
 if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
-    app.listen(3000, () => {
+    app.listen(8080, () => {
         console.log('Server running on port 3000');
     });
 }
