@@ -1,0 +1,59 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Photos {
+  id  String @id @default(cuid())
+  url String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  User      User?    @relation(fields: [userId], references: [id])
+  userId    String?
+}
+
+model User {
+  id        String   @id @default(cuid())
+  pnoNo     String   @unique
+  password  String
+  name      String?
+  role      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  photos Photos[]
+
+  Admin   Admin  @relation(fields: [adminId], references: [id])
+  adminId String
+}
+
+model Admin {
+  id String @id @default(cuid())
+
+  email    String
+  password String
+  name     String
+  users    User[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model QR {
+  id String @id @default(cuid())
+
+  lattitude     String
+  longitude     String
+  policeStation String
+  // jab isScanned true hoga tab scannedbny and scanned on update honge
+  isScanned     Boolean  @default(false)
+  scannedOn     String?
+  scannedBy     String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
