@@ -36,6 +36,7 @@ export const createQR = (req, res) => __awaiter(void 0, void 0, void 0, function
         });
     }
     catch (error) {
+        console.log(error);
         res.status(500).json({ message: 'Internal Server Error', error: error });
     }
 });

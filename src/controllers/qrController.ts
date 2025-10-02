@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 
 export const createQR = async (req: Request, res: Response) => {
     const { lattitude, longitude, policeStation } = req.body
+
     const { userId } = req.query
     try {
 
@@ -33,6 +34,7 @@ export const createQR = async (req: Request, res: Response) => {
         })
 
     } catch (error) {
+        console.log(error)
         res.status(500).json({ message: 'Internal Server Error', error: error })
     }
 
