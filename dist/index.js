@@ -33,10 +33,6 @@ app.get("/", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         message: "hello from Vercel Serverless Function!"
     });
 }));
-// --- Conditional Local Server Startup ---
-// VERCEL ONLY CARES ABOUT THE EXPORT, IT DOES NOT NEED app.listen()
-// This check ensures 'app.listen' only runs when the file is executed directly 
-// (e.g., via 'npm start' or 'npm run dev'), not when Vercel imports it.
 if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
     const port = process.env.PORT || 8080;
     app.listen(port, () => {
@@ -44,6 +40,5 @@ if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
     });
 }
 // THIS IS THE CRUCIAL PART FOR VERCEL
-// It exports the Express application object so Vercel can wrap it as a serverless function.
 export default app;
 //# sourceMappingURL=index.js.map

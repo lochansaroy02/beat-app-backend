@@ -1,5 +1,7 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  // This flag enables the use of the new Serverless Driver Adapter
+  previewFeatures = ["driverAdapters"]
 }
 
 datasource db {
