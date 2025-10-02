@@ -1,4 +1,5 @@
 import { Request, Response } from "express";
+import prisma from "../utils/prisma.js";
 
 export const createQR = async (req: Request, res: Response) => {
     const { lattitude, longitude, policeStation } = req.body
@@ -9,7 +10,7 @@ export const createQR = async (req: Request, res: Response) => {
         if (!lattitude || !longitude || !policeStation) {
             return res.status(400).json({ message: 'lattitude,longitude and policeStation are required.' });
         }
-        const isExisted = await prisma?.qR.findFirst({
+        const isExisted = await prisma.qR.findFirst({
             where: {
                 lattitude, longitude
             }
@@ -19,7 +20,7 @@ export const createQR = async (req: Request, res: Response) => {
             return
         }
 
-        const qrData = await prisma?.qR.create({
+        const qrData = await prisma.qR.create({
             data: {
                 lattitude,
                 longitude,
@@ -64,14 +65,14 @@ export const scanQRcode = async (req: Request, res: Response) => {
             return res.status(400).json({ message: 'lattitude,longitude and policeStation are required.' });
         }
 
-        const qrData = await prisma?.qR.findFirst({
+        const qrData = await prisma.qR.findFirst({
             where: {
                 lattitude, longitude
             }
         })
         const scannedDate = new Date();
         const formattedDate = formatDate(scannedDate);
-        await prisma?.qR.update({
+        await prisma.qR.update({
             where: {
                 id: qrData?.id
             },

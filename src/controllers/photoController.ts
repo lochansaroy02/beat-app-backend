@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-
+import prisma from "../utils/prisma.js";
 interface PhotoBody {
     // This field can be a single URL string or an array of URL strings
     photoUrl: string | string[];
@@ -32,11 +32,11 @@ export const addPhoto = async (req: Request<{}, {}, any>, res: Response) => {
 
         if (photoData.length === 1) {
             // Option A: Use `create` for a single entry
-            results = await prisma?.photos.create({
+            results = await prisma.photos.create({
                 data: photoData[0],
             });
         } else {
-            results = await prisma?.photos.createMany({
+            results = await prisma.photos.createMany({
                 data: photoData,
                 skipDuplicates: true,
             });

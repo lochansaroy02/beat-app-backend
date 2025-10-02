@@ -7,6 +7,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+import prisma from "../utils/prisma.js";
 export const addPhoto = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { photoUrl, userId } = req.body;
@@ -27,15 +28,15 @@ export const addPhoto = (req, res) => __awaiter(void 0, void 0, void 0, function
         let results;
         if (photoData.length === 1) {
             // Option A: Use `create` for a single entry
-            results = yield (prisma === null || prisma === void 0 ? void 0 : prisma.photos.create({
+            results = yield prisma.photos.create({
                 data: photoData[0],
-            }));
+            });
         }
         else {
-            results = yield (prisma === null || prisma === void 0 ? void 0 : prisma.photos.createMany({
+            results = yield prisma.photos.createMany({
                 data: photoData,
                 skipDuplicates: true,
-            }));
+            });
         }
         res.status(201).json({
             success: true,

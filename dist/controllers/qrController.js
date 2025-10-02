@@ -7,6 +7,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+import prisma from "../utils/prisma.js";
 export const createQR = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { lattitude, longitude, policeStation } = req.body;
     const { userId } = req.query;
@@ -14,22 +15,22 @@ export const createQR = (req, res) => __awaiter(void 0, void 0, void 0, function
         if (!lattitude || !longitude || !policeStation) {
             return res.status(400).json({ message: 'lattitude,longitude and policeStation are required.' });
         }
-        const isExisted = yield (prisma === null || prisma === void 0 ? void 0 : prisma.qR.findFirst({
+        const isExisted = yield prisma.qR.findFirst({
             where: {
                 lattitude, longitude
             }
-        }));
+        });
         if (isExisted) {
             res.status(501).json({ message: 'qr already generated' });
             return;
         }
-        const qrData = yield (prisma === null || prisma === void 0 ? void 0 : prisma.qR.create({
+        const qrData = yield prisma.qR.create({
             data: {
                 lattitude,
                 longitude,
                 policeStation,
             }
-        }));
+        });
         res.status(201).json({
             message: "QR generated",
             data: qrData
@@ -54,14 +55,14 @@ export const scanQRcode = (req, res) => __awaiter(void 0, void 0, void 0, functi
         if (!lattitude || !longitude || !policeStation) {
             return res.status(400).json({ message: 'lattitude,longitude and policeStation are required.' });
         }
-        const qrData = yield (prisma === null || prisma === void 0 ? void 0 : prisma.qR.findFirst({
+        const qrData = yield prisma.qR.findFirst({
             where: {
                 lattitude, longitude
             }
-        }));
+        });
         const scannedDate = new Date();
         const formattedDate = formatDate(scannedDate);
-        yield (prisma === null || prisma === void 0 ? void 0 : prisma.qR.update({
+        yield prisma.qR.update({
             where: {
                 id: qrData === null || qrData === void 0 ? void 0 : qrData.id
             },
@@ -70,7 +71,7 @@ export const scanQRcode = (req, res) => __awaiter(void 0, void 0, void 0, functi
                 scannedBy: pnoNo,
                 scannedOn: formattedDate
             }
-        }));
+        });
         res.status(200).json({
             message: "qr data updated"
         });
