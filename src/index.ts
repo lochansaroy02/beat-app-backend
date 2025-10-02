@@ -36,4 +36,11 @@ app.listen(8080, () => {
 
 
 
+if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
+    app.listen(3000, () => {
+        console.log('Server running on port 3000');
+    });
+}
 
+// THIS IS CRUCIAL FOR VERCEL
+export default app;

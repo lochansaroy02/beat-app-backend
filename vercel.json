@@ -2,14 +2,23 @@
     "version": 2,
     "builds": [
         {
-            "src": "dist/index.js",
-            "use": "@vercel/node"
+            "src": "index.ts",
+            "use": "@vercel/node",
+            "config": {
+                "includeFiles": [
+                    "dist/**/*",
+                    "prisma/schema.prisma",
+                    "node_modules/.prisma/**"
+                ]
+            }
         }
     ],
     "routes": [
         {
             "src": "/.*",
-            "dest": "dist/index.js"
+            "dest": "index.ts"
         }
-    ]
+    ],
+    "installCommand": "npm install",
+    "buildCommand": "npx prisma generate && tsc -b"
 }
