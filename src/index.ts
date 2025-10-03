@@ -14,7 +14,7 @@ app.use(express.json());
 
 // --- 1. CORS Configuration (Explicitly allow your frontend domain) ---
 // Define your frontend origin
-const FRONTEND_URL = 'https://dutytrack.vercel.app';
+const FRONTEND_URL = 'https://dutytrack.vercel.app/en';
 
 // Configure the CORS middleware
 app.use(cors({
@@ -25,14 +25,7 @@ app.use(cors({
     credentials: true // If you are using cookies or session-based authentication
 }));
 
-
-// --- 2. GLOBAL OPTIONS Preflight Handler (The Fix for Redirects) ---
-// This middleware intercepts all OPTIONS requests and sends a 204 (No Content)
-// with the correct CORS headers, preventing any subsequent middleware (including routers/redirects)
-// from generating the forbidden 3xx redirect response.
 app.options('*', (req, res) => {
-    // The 'cors' middleware above should have already set the required headers.
-    // We just need to terminate the request successfully.
     res.sendStatus(204);
 });
 
