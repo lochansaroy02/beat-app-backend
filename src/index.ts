@@ -35,7 +35,8 @@ const corsOptions: CorsOptions = {
 app.use(cors(corsOptions));
 
 // ✅ Handle Preflight Requests
-app.options("*", cors(corsOptions));
+app.options("/{*any}", cors(corsOptions));
+
 
 // --- Routes ---
 app.use("/admin", adminRoutes);
