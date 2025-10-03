@@ -42,16 +42,21 @@ export const createQR = async (req: Request, res: Response) => {
 }
 
 
-
 const formatDate = (date: Date): string => {
     const dd = String(date.getDate()).padStart(2, "0");
     const mm = String(date.getMonth() + 1).padStart(2, "0");
     const yyyy = date.getFullYear();
 
-    const hh = String(date.getHours()).padStart(2, "0");
+    let hh = date.getHours();
     const min = String(date.getMinutes()).padStart(2, "0");
 
-    return `${dd}-${mm}-${yyyy} ${hh}:${min}`;
+    const ampm = hh >= 12 ? "PM" : "AM";
+    hh = hh % 12;
+    hh = hh ? hh : 12; // convert 0 (midnight) to 12
+
+    const hhStr = String(hh).padStart(2, "0");
+
+    return `${dd}-${mm}-${yyyy} ${hhStr}:${min} ${ampm}`;
 };
 
 
@@ -90,5 +95,24 @@ export const scanQRcode = async (req: Request, res: Response) => {
         res.status(500).json({ message: 'Internal Server Error', error: error })
     }
 
+}
+
+export const getQR = async (req: Request, res: Response) => {
+    const { userId } = req.params
+    try {
+        const qrData = await prisma.qR.findMany({
+            where: {
+                scannedBy: userId
+            }
+        })
+        res.status(200).json({
+            success: true,
+            message: "qr data sent",
+            data: qrData
+        })
+
+    } catch (error) {
+        res.status(500).json({ message: 'Internal Server Error', error: error })
+    }
 }
 

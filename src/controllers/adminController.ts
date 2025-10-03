@@ -1,6 +1,8 @@
 import bcrypt from 'bcrypt';
 import { Request, Response } from "express";
+import jwt from "jsonwebtoken";
 import prisma from '../utils/prisma.js';
+
 
 
 
@@ -29,7 +31,7 @@ export const createAdmin = async (req: Request, res: Response) => {
         })
         return res.status(201).json({
             success: true,
-            message: "district created successfully",
+            message: "admin data",
             data: districtData
         });
 
@@ -41,4 +43,92 @@ export const createAdmin = async (req: Request, res: Response) => {
         });
     }
 
+
+
+}
+
+
+export const login = async (req: Request, res: Response) => {
+    const { email, password } = req.body
+    try {
+
+        if (!email || !password) {
+            return res.status(400).json({ message: 'Email and password are required.' });
+        }
+
+        const user = await prisma.admin.findFirst({
+            where: {
+                email
+            }
+        });
+        if (!user) {
+            return res.status(401).json({ message: 'Invalid credentials.' });
+        }
+
+        const isMatched = await bcrypt.compare(password, user.password)
+        if (!isMatched) {
+            return res.status(401).json({ message: 'Invalid Password' });
+
+        }
+        const tokenPayload = {
+            id: user.id,
+            name: user.name,
+            email: user.email
+
+        };
+
+
+
+
+
+        const token = jwt.sign(
+            tokenPayload,
+            process.env.JWT_SECRET as string,
+            { expiresIn: "7d" }
+        );
+        return res.status(201).json({
+            success: true,
+            tokenPayload,
+            message: "Login successful",
+            token,
+
+        });
+    } catch (error) {
+        res.status(500).json({ message: 'Internal Server Error', error: error })
+    }
+
+}
+
+export const getUsers = async (req: Request, res: Response) => {
+
+    const { adminId } = req.params
+
+    try {
+
+        const users = await prisma.user.findMany({
+            where: {
+                adminId,
+            },
+            select: {
+                name: true,
+                pnoNo: true,
+
+                id: true,
+                photos: {
+                    select: {
+                        url: true, userId: true
+                    },
+                }
+            }
+        })
+        return res.status(201).json({
+            success: true,
+            message: "user Data",
+            data: users
+        });
+
+
+    } catch (error) {
+        res.status(500).json({ message: 'Internal Server Error', error: error })
+    }
 }

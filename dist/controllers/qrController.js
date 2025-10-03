@@ -45,9 +45,13 @@ const formatDate = (date) => {
     const dd = String(date.getDate()).padStart(2, "0");
     const mm = String(date.getMonth() + 1).padStart(2, "0");
     const yyyy = date.getFullYear();
-    const hh = String(date.getHours()).padStart(2, "0");
+    let hh = date.getHours();
     const min = String(date.getMinutes()).padStart(2, "0");
-    return `${dd}-${mm}-${yyyy} ${hh}:${min}`;
+    const ampm = hh >= 12 ? "PM" : "AM";
+    hh = hh % 12;
+    hh = hh ? hh : 12; // convert 0 (midnight) to 12
+    const hhStr = String(hh).padStart(2, "0");
+    return `${dd}-${mm}-${yyyy} ${hhStr}:${min} ${ampm}`;
 };
 export const scanQRcode = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { lattitude, longitude, policeStation, pnoNo } = req.body;
@@ -74,6 +78,24 @@ export const scanQRcode = (req, res) => __awaiter(void 0, void 0, void 0, functi
         });
         res.status(200).json({
             message: "qr data updated"
+        });
+    }
+    catch (error) {
+        res.status(500).json({ message: 'Internal Server Error', error: error });
+    }
+});
+export const getQR = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { userId } = req.params;
+    try {
+        const qrData = yield prisma.qR.findMany({
+            where: {
+                scannedBy: userId
+            }
+        });
+        res.status(200).json({
+            success: true,
+            message: "qr data sent",
+            data: qrData
         });
     }
     catch (error) {

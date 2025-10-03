@@ -8,6 +8,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 import bcrypt from 'bcrypt';
+import jwt from "jsonwebtoken";
 import prisma from '../utils/prisma.js';
 export const createAdmin = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -31,7 +32,7 @@ export const createAdmin = (req, res) => __awaiter(void 0, void 0, void 0, funct
         });
         return res.status(201).json({
             success: true,
-            message: "district created successfully",
+            message: "admin data",
             data: districtData
         });
     }
@@ -41,6 +42,69 @@ export const createAdmin = (req, res) => __awaiter(void 0, void 0, void 0, funct
             message: "Internal Server Error",
             error: error.message
         });
+    }
+});
+export const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { email, password } = req.body;
+    try {
+        if (!email || !password) {
+            return res.status(400).json({ message: 'Email and password are required.' });
+        }
+        const user = yield prisma.admin.findFirst({
+            where: {
+                email
+            }
+        });
+        if (!user) {
+            return res.status(401).json({ message: 'Invalid credentials.' });
+        }
+        const isMatched = yield bcrypt.compare(password, user.password);
+        if (!isMatched) {
+            return res.status(401).json({ message: 'Invalid Password' });
+        }
+        const tokenPayload = {
+            id: user.id,
+            name: user.name,
+            email: user.email
+        };
+        const token = jwt.sign(tokenPayload, process.env.JWT_SECRET, { expiresIn: "7d" });
+        return res.status(201).json({
+            success: true,
+            tokenPayload,
+            message: "Login successful",
+            token,
+        });
+    }
+    catch (error) {
+        res.status(500).json({ message: 'Internal Server Error', error: error });
+    }
+});
+export const getUsers = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { adminId } = req.params;
+    try {
+        const users = yield prisma.user.findMany({
+            where: {
+                adminId,
+            },
+            select: {
+                name: true,
+                pnoNo: true,
+                id: true,
+                photos: {
+                    select: {
+                        url: true, userId: true
+                    },
+                }
+            }
+        });
+        return res.status(201).json({
+            success: true,
+            message: "user Data",
+            data: users
+        });
+    }
+    catch (error) {
+        res.status(500).json({ message: 'Internal Server Error', error: error });
     }
 });
 //# sourceMappingURL=adminController.js.map
