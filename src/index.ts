@@ -11,13 +11,8 @@ const app = express();
 app.use(express.json());
 
 
-const corsOptions = {
-    origin: 'https://dutytrack.vercel.app/en',
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-    credentials: true,
-    optionsSuccessStatus: 204
-};
-app.use(cors(corsOptions));
+
+app.use(cors());
 
 
 // --- Routes ---
