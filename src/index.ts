@@ -12,11 +12,8 @@ import qrRoutes from './routes/qrRoutes.js';
 const app = express();
 app.use(express.json());
 
-// --- 1. CORS Configuration (Explicitly allow your frontend domain) ---
-// Define your frontend origin
-const FRONTEND_URL = 'https://dutytrack.vercel.app/en';
+const FRONTEND_URL = 'https://dutytrack.vercel.app';
 
-// Configure the CORS middleware
 app.use(cors({
     origin: FRONTEND_URL,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Allow all standard methods, including OPTIONS
