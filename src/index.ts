@@ -1,18 +1,18 @@
 import cors, { CorsOptions } from "cors";
-import express, { Request, Response } from 'express';
+import express, { Request, Response } from "express";
 
 // Routes
-import adminRoutes from './routes/adminRoutes.js';
-import authRoutes from './routes/authRoutes.js';
-import photosRoutes from './routes/photosRoutes.js';
-import qrRoutes from './routes/qrRoutes.js';
+import adminRoutes from "./routes/adminRoutes.js";
+import authRoutes from "./routes/authRoutes.js";
+import photosRoutes from "./routes/photosRoutes.js";
+import qrRoutes from "./routes/qrRoutes.js";
 
 const app = express();
 app.use(express.json());
 
 // ✅ Allowed Origins
 const allowedOrigins = [
-    "https://dutytrack.policetech.in"
+    "https://dutytrack.policetech.in",
 ];
 
 // ✅ CORS Options
@@ -30,12 +30,9 @@ const corsOptions: CorsOptions = {
     allowedHeaders: ["Content-Type", "Authorization"],
 };
 
-// ✅ Apply middleware
+// ✅ Apply CORS globally (fixes path-to-regexp error)
 app.use(cors(corsOptions));
-
-// ✅ Handle Preflight Requests
-app.options("/{*any}", cors(corsOptions));
-
+app.options("*", cors(corsOptions)); // Allow preflight for all routes
 
 // --- Routes ---
 app.use("/admin", adminRoutes);
