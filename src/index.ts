@@ -12,8 +12,6 @@ app.use(express.json());
 
 // ✅ Allowed Origins
 const allowedOrigins = [
-    "http://localhost:3000",
-    "https://dutytrack.vercel.app",
     "https://dutytrack.policetech.in"
 ];
 
