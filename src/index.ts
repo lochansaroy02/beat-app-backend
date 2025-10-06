@@ -13,6 +13,7 @@ app.use(express.json());
 // ✅ Allowed Origins
 const allowedOrigins = [
     "https://dutytrack.policetech.in",
+    "http://localhost:3000"
 ];
 
 // ✅ CORS Options
