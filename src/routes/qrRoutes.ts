@@ -1,5 +1,5 @@
 import express from "express";
-import { createQR, getQR, scanQRcode } from "../controllers/qrController.js";
+import { createBulkQR, createQR, getQR, scanQRcode } from "../controllers/qrController.js";
 
 const router = express.Router();
 
@@ -8,6 +8,7 @@ const router = express.Router();
 router.get("/get/:userId", getQR)
 router.post("/create", createQR)
 router.put("/scan", scanQRcode)
+router.post("/create/bulk", createBulkQR)
 
 
 
