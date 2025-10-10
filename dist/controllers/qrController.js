@@ -104,6 +104,20 @@ export const getQR = (req, res) => __awaiter(void 0, void 0, void 0, function* (
         res.status(500).json({ message: 'Internal Server Error', error: error });
     }
 });
+export const getAllQR = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { userId } = req.params;
+    try {
+        const qrData = yield prisma.qR.findMany();
+        res.status(200).json({
+            success: true,
+            message: "qr data sent",
+            data: qrData
+        });
+    }
+    catch (error) {
+        res.status(500).json({ message: 'Internal Server Error', error: error });
+    }
+});
 const isValidQrData = (data) => {
     return data.lattitude && data.longitude && data.policeStation;
 };
