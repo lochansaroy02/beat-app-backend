@@ -63,20 +63,19 @@ const formatDate = (date: Date): string => {
 
 
 export const scanQRcode = async (req: Request, res: Response) => {
-    const { lattitude, longitude, policeStation, pnoNo } = req.body
+    const { lattitude, longitude, pnoNo } = req.body
 
     try {
 
-        if (!lattitude || !longitude || !policeStation) {
+        if (!lattitude || !longitude) {
             return res.status(400).json({ message: 'lattitude,longitude and policeStation are required.' });
         }
 
         const qrData = await prisma.qR.findFirst({
             where: {
-                lattitude, longitude
+                lattitude, longitude,
             }
         })
-        // for sample it shouldtke different dates 
         const scannedDate = new Date();
         const formattedDate = formatDate(scannedDate);
         await prisma.qR.update({
@@ -100,11 +99,14 @@ export const scanQRcode = async (req: Request, res: Response) => {
 }
 
 export const getQR = async (req: Request, res: Response) => {
-    const { userId } = req.params
+    const { pnoNo } = req.params
     try {
+        if (!pnoNo) {
+            return
+        }
         const qrData = await prisma.qR.findMany({
             where: {
-                scannedBy: userId
+                scannedBy: pnoNo
             }
         })
         res.status(200).json({

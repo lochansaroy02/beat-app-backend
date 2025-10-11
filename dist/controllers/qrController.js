@@ -55,17 +55,16 @@ const formatDate = (date) => {
     return `${dd}-${mm}-${yyyy} ${hhStr}:${min} ${ampm}`;
 };
 export const scanQRcode = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { lattitude, longitude, policeStation, pnoNo } = req.body;
+    const { lattitude, longitude, pnoNo } = req.body;
     try {
-        if (!lattitude || !longitude || !policeStation) {
+        if (!lattitude || !longitude) {
             return res.status(400).json({ message: 'lattitude,longitude and policeStation are required.' });
         }
         const qrData = yield prisma.qR.findFirst({
             where: {
-                lattitude, longitude
+                lattitude, longitude,
             }
         });
-        // for sample it shouldtke different dates 
         const scannedDate = new Date();
         const formattedDate = formatDate(scannedDate);
         yield prisma.qR.update({
@@ -87,11 +86,14 @@ export const scanQRcode = (req, res) => __awaiter(void 0, void 0, void 0, functi
     }
 });
 export const getQR = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { userId } = req.params;
+    const { pnoNo } = req.params;
     try {
+        if (!pnoNo) {
+            return;
+        }
         const qrData = yield prisma.qR.findMany({
             where: {
-                scannedBy: userId
+                scannedBy: pnoNo
             }
         });
         res.status(200).json({
