@@ -176,4 +176,20 @@ export const createBulkQR = (req, res) => __awaiter(void 0, void 0, void 0, func
         res.status(500).json({ message: 'Internal Server Error', error: error });
     }
 });
+export const deleteQR = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { qrId } = req.params;
+        yield prisma.qR.delete({
+            where: {
+                id: qrId
+            }
+        });
+        res.status(201).json({
+            message: "QR deleted successfully"
+        });
+    }
+    catch (error) {
+        res.status(500).json({ message: 'Internal Server Error', error: error });
+    }
+});
 //# sourceMappingURL=qrController.js.map

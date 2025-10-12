@@ -207,3 +207,21 @@ export const createBulkQR = async (req: Request, res: Response) => {
         res.status(500).json({ message: 'Internal Server Error', error: error })
     }
 }
+
+export const deleteQR = async (req: Request, res: Response) => {
+    try {
+        const { qrId } = req.params
+        await prisma.qR.delete({
+            where: {
+                id: qrId
+            }
+        })
+        res.status(201).json({
+            message: "QR deleted successfully"
+        })
+
+
+    } catch (error) {
+        res.status(500).json({ message: 'Internal Server Error', error: error })
+    }
+}
