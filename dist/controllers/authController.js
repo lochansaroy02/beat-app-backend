@@ -13,39 +13,78 @@ import prisma from '../utils/prisma.js';
 export const signUp = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { adminId } = req.params;
-        const { pnoNo, password, name } = req.body;
-        const isExisted = yield prisma.user.findUnique({
+        const inputData = req.body;
+        // --- Input Validation: Check for adminId ---
+        if (!adminId) {
+            return res.status(500).json({ message: 'Internal Server Error: Admin ID missing' });
+        }
+        const adminExists = yield prisma.admin.findUnique({
             where: {
-                pnoNo
+                id: adminId,
             }
         });
-        if (isExisted) {
-            res.status(501).json({ message: 'user already found' });
-            return;
+        if (!adminExists) {
+            // Return 404 or 400 with a clear message if the admin ID is invalid
+            return res.status(404).json({
+                message: `Validation Error: Admin with ID ${adminId} not found. Foreign key constraint would be violated.`,
+            });
         }
-        if (adminId == null || adminId == undefined) {
-            res.status(500).json({ message: 'Internal Server Error' });
-            return;
-        }
-        const passwordHash = yield bcrypt.hash(password, 10);
-        const userData = yield prisma.user.create({
-            data: {
-                pnoNo,
-                password: passwordHash,
-                name,
-                //@ts-ignore
-                adminId,
-                role: "user"
+        // --- Helper function for single user creation ---
+        const createUser = (user) => __awaiter(void 0, void 0, void 0, function* () {
+            const { pnoNo, password, name } = user;
+            // 1. Check for existing user
+            const isExisted = yield prisma.user.findUnique({
+                where: { pnoNo }
+            });
+            if (isExisted) {
+                // Return a specific object indicating failure for bulk operation
+                return { success: false, pnoNo, message: 'User already exists' };
             }
+            // 2. Hash password and create user
+            const passwordHash = yield bcrypt.hash(password, 10);
+            const userData = yield prisma.user.create({
+                data: {
+                    pnoNo,
+                    password: passwordHash,
+                    name,
+                    // Use type assertion if @ts-ignore is necessary for adminId, 
+                    // though defining your Prisma schema correctly is preferable
+                    adminId: adminId, // Assuming adminId is a string
+                    role: "user"
+                }
+            });
+            return { success: true, pnoNo, data: userData };
         });
-        res.status(201).json({
+        // --- Handle Bulk Signup (Array Input) ---
+        if (Array.isArray(inputData)) {
+            const results = yield Promise.all(inputData.map(createUser));
+            const successfulCreations = results.filter(r => r.success);
+            const failedCreations = results.filter(r => !r.success);
+            return res.status(207).json({
+                success: true,
+                message: `${successfulCreations.length} user(s) created successfully. ${failedCreations.length} failed.`,
+                data: successfulCreations.map(r => r.data),
+                errors: failedCreations.map(r => ({ pnoNo: r.pnoNo, message: r.message }))
+            });
+        }
+        // --- Handle Single Signup (Object Input) ---
+        const result = yield createUser(inputData);
+        if (!result.success) {
+            return res.status(501).json({ message: result.message });
+        }
+        return res.status(201).json({
             success: true,
             message: 'User created successfully',
-            data: userData
+            data: result.data
         });
     }
     catch (error) {
-        res.status(500).json({ message: 'Internal Server Error', error: error });
+        // Log the error for debugging purposes in a real application
+        console.error("Signup Error:", error);
+        return res.status(500).json({
+            message: 'Internal Server Error',
+            error: error instanceof Error ? error.message : String(error)
+        });
     }
 });
 export const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {

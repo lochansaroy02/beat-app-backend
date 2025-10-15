@@ -3,52 +3,103 @@ import { Request, Response } from 'express';
 import jwt from "jsonwebtoken";
 import prisma from '../utils/prisma.js';
 
+
+interface UserInput {
+    name: string;
+    pnoNo: string;
+    password: string;
+}
+
 export const signUp = async (req: Request, res: Response) => {
     try {
         const { adminId } = req.params;
-        const { pnoNo, password, name } = req.body
+        const inputData: UserInput | UserInput[] = req.body;
 
-        const isExisted = await prisma.user.findUnique({
+        // --- Input Validation: Check for adminId ---
+        if (!adminId) {
+            return res.status(500).json({ message: 'Internal Server Error: Admin ID missing' });
+        }
+
+        const adminExists = await prisma.admin.findUnique({
             where: {
-                pnoNo
+                id: adminId,
             }
-        })
+        });
 
-        if (isExisted) {
-            res.status(501).json({ message: 'user already found' })
-            return
+        if (!adminExists) {
+            // Return 404 or 400 with a clear message if the admin ID is invalid
+            return res.status(404).json({
+                message: `Validation Error: Admin with ID ${adminId} not found. Foreign key constraint would be violated.`,
+            });
+        }
+        // --- Helper function for single user creation ---
+        const createUser = async (user: UserInput) => {
+            const { pnoNo, password, name } = user;
+
+            // 1. Check for existing user
+            const isExisted = await prisma.user.findUnique({
+                where: { pnoNo }
+            });
+
+            if (isExisted) {
+                // Return a specific object indicating failure for bulk operation
+                return { success: false, pnoNo, message: 'User already exists' };
+            }
+
+            // 2. Hash password and create user
+            const passwordHash = await bcrypt.hash(password, 10);
+            const userData = await prisma.user.create({
+                data: {
+                    pnoNo,
+                    password: passwordHash,
+                    name,
+                    // Use type assertion if @ts-ignore is necessary for adminId, 
+                    // though defining your Prisma schema correctly is preferable
+                    adminId: adminId as string, // Assuming adminId is a string
+                    role: "user"
+                }
+            });
+
+            return { success: true, pnoNo, data: userData };
+        };
+
+        // --- Handle Bulk Signup (Array Input) ---
+        if (Array.isArray(inputData)) {
+            const results = await Promise.all(inputData.map(createUser));
+
+            const successfulCreations = results.filter(r => r.success);
+            const failedCreations = results.filter(r => !r.success);
+
+            return res.status(207).json({ // 207 Multi-Status is appropriate for partial success/failure
+                success: true,
+                message: `${successfulCreations.length} user(s) created successfully. ${failedCreations.length} failed.`,
+                data: successfulCreations.map(r => r.data),
+                errors: failedCreations.map(r => ({ pnoNo: r.pnoNo, message: r.message }))
+            });
         }
 
+        // --- Handle Single Signup (Object Input) ---
+        const result = await createUser(inputData);
 
-        if (adminId == null || adminId == undefined) {
-            res.status(500).json({ message: 'Internal Server Error' })
-            return
+        if (!result.success) {
+            return res.status(501).json({ message: result.message });
         }
 
-        const passwordHash = await bcrypt.hash(password, 10)
-        const userData = await prisma.user.create({
-            data: {
-                pnoNo,
-                password: passwordHash,
-                name,
-                //@ts-ignore
-                adminId,
-                role: "user"
-            }
-        })
-
-        res.status(201).json({
+        return res.status(201).json({
             success: true,
             message: 'User created successfully',
-            data: userData
-        })
-
+            data: result.data
+        });
 
     } catch (error) {
-        res.status(500).json({ message: 'Internal Server Error', error: error })
+        // Log the error for debugging purposes in a real application
+        console.error("Signup Error:", error);
+        return res.status(500).json({
+            message: 'Internal Server Error',
+            error: error instanceof Error ? error.message : String(error)
+        });
     }
 }
-
 
 export const login = async (req: Request, res: Response) => {
     const { pnoNo, password } = req.body
