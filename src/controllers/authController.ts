@@ -146,3 +146,58 @@ export const login = async (req: Request, res: Response) => {
     }
 
 }
+// NOTE: Assuming you have 'prisma', 'Request', and 'Response' types available
+
+export const changePassword = async (req: Request, res: Response) => {
+
+    const { pnoNo, oldPassword, newPassword } = req.body;
+
+    try {
+        // --- 1. Basic Validation ---
+        if (!pnoNo || !oldPassword || !newPassword) {
+            return res.status(400).json({ message: 'PnoNo, old password, and new password are required.' });
+        }
+
+        const user = await prisma.user.findFirst({
+            where: {
+                pnoNo
+            }
+        });
+
+        if (!user) {
+            // Use a specific status/message if the user is not found
+            return res.status(404).json({ message: 'User not found.' });
+        }
+
+        // --- 2. Verify Old Password ---
+        const isMatched = await bcrypt.compare(oldPassword, user.password);
+
+        if (!isMatched) {
+            return res.status(401).json({ message: 'Incorrect old password.' });
+        }
+
+        // --- 3. Hash the New Password ---
+        // Define your salt rounds (e.g., 10 or 12)
+        const SALT_ROUNDS = 10;
+        const hashedPassword = await bcrypt.hash(newPassword, SALT_ROUNDS);
+
+        // --- 4. Update the User Record ---
+        const updatedUser = await prisma.user.update({
+            where: { pnoNo: pnoNo }, // Ensure pnoNo is a unique identifier for update
+            data: { password: hashedPassword },
+            select: { pnoNo: true } // Select only non-sensitive data to return
+        });
+
+        // --- 5. Return Success Response ---
+        return res.status(200).json({
+            success: true,
+            message: "Password changed successfully.",
+            user: { pnoNo: updatedUser.pnoNo }
+        });
+
+    } catch (error) {
+        // Log the error for server-side debugging
+        console.error("Change Password Error:", error);
+        res.status(500).json({ message: 'Internal Server Error' });
+    }
+};
