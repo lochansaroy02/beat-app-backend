@@ -108,7 +108,6 @@ export const login = async (req: Request, res: Response) => {
         if (!pnoNo || !password) {
             return res.status(400).json({ message: 'Email and password are required.' });
         }
-
         const user = await prisma.user.findFirst({
             where: {
                 pnoNo
