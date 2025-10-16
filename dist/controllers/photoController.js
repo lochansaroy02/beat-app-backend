@@ -19,7 +19,7 @@ export const addPhoto = (req, res) => __awaiter(void 0, void 0, void 0, function
         }
         // 1. Normalize the photoUrl into an array
         const photoUrlsArray = Array.isArray(photoUrl) ? photoUrl : [photoUrl];
-        // 2. Prepare data for Prisma
+        // 2. Prepare data for P risma
         // We map the array of URLs into an array of objects for Prisma's createMany or create
         const photoData = photoUrlsArray.map(url => ({
             url: url,

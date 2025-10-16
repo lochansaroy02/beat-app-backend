@@ -46,6 +46,17 @@ model Admin {
   updatedAt DateTime @updatedAt
 }
 
+model SubAdmin {
+  id String @id @default(uuid())
+
+  name      String
+  role      String
+  mobileNo  String
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 model QR {
   id String @id @default(cuid())
 

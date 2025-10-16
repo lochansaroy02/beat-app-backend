@@ -6,6 +6,7 @@ import adminRoutes from "./routes/adminRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
 import photosRoutes from "./routes/photosRoutes.js";
 import qrRoutes from "./routes/qrRoutes.js";
+import subAdminRoutes from "./routes/subAdminRoutes.js";
 
 const app = express();
 app.use(express.json());
@@ -40,6 +41,7 @@ app.use("/admin", adminRoutes);
 app.use("/auth", authRoutes);
 app.use("/qr", qrRoutes);
 app.use("/photo", photosRoutes);
+app.use("/subAdmin", subAdminRoutes);
 
 // Health check
 app.get("/", (req: Request, res: Response) => {
