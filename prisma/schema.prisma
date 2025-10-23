@@ -20,11 +20,15 @@ model Photos {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  pnoNo     String   @unique
-  password  String
-  name      String?
-  role      String?
+  id       String  @id @default(cuid())
+  pnoNo    String  @unique
+  password String
+  name     String?
+  role     String?
+
+  co            String?
+  policeStation String?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

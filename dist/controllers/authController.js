@@ -31,7 +31,7 @@ export const signUp = (req, res) => __awaiter(void 0, void 0, void 0, function* 
         }
         // --- Helper function for single user creation ---
         const createUser = (user) => __awaiter(void 0, void 0, void 0, function* () {
-            const { pnoNo, password, name } = user;
+            const { pnoNo, password, name, co, policeStation } = user;
             // 1. Check for existing user
             const isExisted = yield prisma.user.findUnique({
                 where: { pnoNo }
@@ -47,6 +47,8 @@ export const signUp = (req, res) => __awaiter(void 0, void 0, void 0, function* 
                     pnoNo,
                     password: passwordHash,
                     name,
+                    co,
+                    policeStation,
                     // Use type assertion if @ts-ignore is necessary for adminId, 
                     // though defining your Prisma schema correctly is preferable
                     adminId: adminId, // Assuming adminId is a string

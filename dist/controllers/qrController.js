@@ -55,7 +55,7 @@ const formatDate = (date) => {
     return `${dd}-${mm}-${yyyy} ${hhStr}:${min} ${ampm}`;
 };
 export const scanQRcode = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { lattitude, longitude, pnoNo } = req.body;
+    const { lattitude, longitude, pnoNo, dutyPoint } = req.body;
     try {
         if (!lattitude || !longitude) {
             return res.status(400).json({ message: 'lattitude,longitude and policeStation are required.' });
@@ -74,6 +74,7 @@ export const scanQRcode = (req, res) => __awaiter(void 0, void 0, void 0, functi
             data: {
                 isScanned: true,
                 scannedBy: pnoNo,
+                dutyPoint: dutyPoint,
                 scannedOn: formattedDate
             }
         });

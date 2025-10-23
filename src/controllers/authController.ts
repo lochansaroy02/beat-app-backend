@@ -7,8 +7,12 @@ import prisma from '../utils/prisma.js';
 interface UserInput {
     name: string;
     pnoNo: string;
+    co: string;
+    policeStation: string
     password: string;
 }
+
+
 
 export const signUp = async (req: Request, res: Response) => {
     try {
@@ -34,7 +38,7 @@ export const signUp = async (req: Request, res: Response) => {
         }
         // --- Helper function for single user creation ---
         const createUser = async (user: UserInput) => {
-            const { pnoNo, password, name } = user;
+            const { pnoNo, password, name, co, policeStation } = user;
 
             // 1. Check for existing user
             const isExisted = await prisma.user.findUnique({
@@ -53,6 +57,8 @@ export const signUp = async (req: Request, res: Response) => {
                     pnoNo,
                     password: passwordHash,
                     name,
+                    co,
+                    policeStation,
                     // Use type assertion if @ts-ignore is necessary for adminId, 
                     // though defining your Prisma schema correctly is preferable
                     adminId: adminId as string, // Assuming adminId is a string

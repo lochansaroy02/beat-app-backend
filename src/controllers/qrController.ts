@@ -63,7 +63,7 @@ const formatDate = (date: Date): string => {
 
 
 export const scanQRcode = async (req: Request, res: Response) => {
-    const { lattitude, longitude, pnoNo } = req.body
+    const { lattitude, longitude, pnoNo, dutyPoint } = req.body
 
     try {
 
@@ -85,6 +85,7 @@ export const scanQRcode = async (req: Request, res: Response) => {
             data: {
                 isScanned: true,
                 scannedBy: pnoNo,
+                dutyPoint: dutyPoint,
                 scannedOn: formattedDate
             }
         })
