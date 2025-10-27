@@ -59,9 +59,7 @@ export const signUp = async (req: Request, res: Response) => {
                     name,
                     co,
                     policeStation,
-                    // Use type assertion if @ts-ignore is necessary for adminId, 
-                    // though defining your Prisma schema correctly is preferable
-                    adminId: adminId as string, // Assuming adminId is a string
+                    adminId: adminId as string,
                     role: "user"
                 }
             });

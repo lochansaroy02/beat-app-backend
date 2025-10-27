@@ -49,9 +49,7 @@ export const signUp = (req, res) => __awaiter(void 0, void 0, void 0, function* 
                     name,
                     co,
                     policeStation,
-                    // Use type assertion if @ts-ignore is necessary for adminId, 
-                    // though defining your Prisma schema correctly is preferable
-                    adminId: adminId, // Assuming adminId is a string
+                    adminId: adminId,
                     role: "user"
                 }
             });

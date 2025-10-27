@@ -4,15 +4,17 @@ import prisma from "../utils/prisma.js";
 export const createQR = async (req: Request, res: Response) => {
     const { lattitude, longitude, policeStation, dutyPoint } = req.body
 
-    const { userId } = req.query
     try {
 
         if (!lattitude || !longitude || !policeStation) {
-            return res.status(400).json({ message: 'lattitude,longitude and policeStation are required.' });
+            return res.status(400).json({
+                message: 'lattitude,longitude and policeStation are required.'
+            });
         }
         const isExisted = await prisma.qR.findFirst({
             where: {
-                lattitude, longitude
+                lattitude,
+                longitude
             }
         })
         if (isExisted) {

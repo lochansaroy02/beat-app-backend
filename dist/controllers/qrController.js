@@ -10,14 +10,16 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 import prisma from "../utils/prisma.js";
 export const createQR = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { lattitude, longitude, policeStation, dutyPoint } = req.body;
-    const { userId } = req.query;
     try {
         if (!lattitude || !longitude || !policeStation) {
-            return res.status(400).json({ message: 'lattitude,longitude and policeStation are required.' });
+            return res.status(400).json({
+                message: 'lattitude,longitude and policeStation are required.'
+            });
         }
         const isExisted = yield prisma.qR.findFirst({
             where: {
-                lattitude, longitude
+                lattitude,
+                longitude
             }
         });
         if (isExisted) {
@@ -55,7 +57,7 @@ const formatDate = (date) => {
     return `${dd}-${mm}-${yyyy} ${hhStr}:${min} ${ampm}`;
 };
 export const scanQRcode = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { lattitude, longitude, pnoNo, dutyPoint } = req.body;
+    const { lattitude, longitude, pnoNo, dutyPoint, date } = req.body;
     try {
         if (!lattitude || !longitude) {
             return res.status(400).json({ message: 'lattitude,longitude and policeStation are required.' });
@@ -75,7 +77,7 @@ export const scanQRcode = (req, res) => __awaiter(void 0, void 0, void 0, functi
                 isScanned: true,
                 scannedBy: pnoNo,
                 dutyPoint: dutyPoint,
-                scannedOn: formattedDate
+                scannedOn: date
             }
         });
         res.status(200).json({
