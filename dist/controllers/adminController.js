@@ -107,4 +107,24 @@ export const getUsers = (req, res) => __awaiter(void 0, void 0, void 0, function
         res.status(500).json({ message: 'Internal Server Error', error: error });
     }
 });
+export const deleteUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { pnoNo } = req.params;
+    try {
+        if (!pnoNo) {
+            res.status(500).json({ message: 'No user selected' });
+            return;
+        }
+        const data = yield prisma.user.delete({
+            where: {
+                pnoNo: pnoNo
+            }
+        });
+        return res.status(200).json({
+            message: "User deleted successfully"
+        });
+    }
+    catch (error) {
+        res.status(500).json({ message: 'Internal Server Error', error: error });
+    }
+});
 //# sourceMappingURL=adminController.js.map

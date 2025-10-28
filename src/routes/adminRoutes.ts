@@ -8,6 +8,7 @@ const router = express.Router();
 router.post("/create", createAdmin)
 router.post("/login", login)
 router.get("/get-users/:adminId", getUsers)
+router.get("/detele-user/:pnoNo", getUsers)
 
 
 
