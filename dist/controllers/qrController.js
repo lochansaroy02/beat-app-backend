@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 import prisma from "../utils/prisma.js";
 export const createQR = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { lattitude, longitude, policeStation, dutyPoint } = req.body;
+    const { lattitude, longitude, policeStation, dutyPoint, cug } = req.body;
     try {
         if (!lattitude || !longitude || !policeStation) {
             return res.status(400).json({
@@ -31,7 +31,8 @@ export const createQR = (req, res) => __awaiter(void 0, void 0, void 0, function
                 lattitude,
                 longitude,
                 policeStation,
-                dutyPoint
+                dutyPoint,
+                cug
             }
         });
         res.status(201).json({
@@ -163,6 +164,7 @@ export const createBulkQR = (req, res) => __awaiter(void 0, void 0, void 0, func
                 lattitude: String(d.lattitude),
                 longitude: String(d.longitude),
                 policeStation: String(d.policeStation),
+                CUG: String(d.cug),
                 dutyPoint: d.dutyPoint ? String(d.dutyPoint) : null // Ensure dutyPoint is handled
             })),
             skipDuplicates: true // Good practice to prevent database errors if a unique constraint exists
@@ -189,6 +191,40 @@ export const deleteQR = (req, res) => __awaiter(void 0, void 0, void 0, function
         });
         res.status(201).json({
             message: "QR deleted successfully"
+        });
+    }
+    catch (error) {
+        res.status(500).json({ message: 'Internal Server Error', error: error });
+    }
+});
+export const deleteQRUndefined = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        yield prisma.qR.deleteMany({
+            where: {
+                lattitude: "undefined"
+            }
+        });
+        res.status(201).json({
+            message: "QR deleted successfully"
+        });
+    }
+    catch (error) {
+        res.status(500).json({ message: 'Internal Server Error', error: error });
+    }
+});
+export const updateCUG = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { policeStation, cug } = req.body;
+        const data = yield prisma.qR.updateMany({
+            where: {
+                policeStation: policeStation
+            }, data: {
+                cug: cug
+            }
+        });
+        return res.status(201).json({
+            message: "data upadted successfully",
+            data: data
         });
     }
     catch (error) {

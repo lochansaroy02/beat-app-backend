@@ -1,5 +1,5 @@
 import express from "express";
-import { createBulkQR, createQR, deleteQR, getAllQR, getQR, scanQRcode } from "../controllers/qrController.js";
+import { createBulkQR, createQR, deleteQR, deleteQRUndefined, getAllQR, getQR, scanQRcode } from "../controllers/qrController.js";
 
 const router = express.Router();
 
@@ -11,6 +11,7 @@ router.post("/create", createQR)
 router.put("/scan", scanQRcode)
 router.post("/create/bulk", createBulkQR)
 router.delete("/delete/:qrId", deleteQR)
+router.delete("/deleteMany", deleteQRUndefined)
 
 
 

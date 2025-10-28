@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import prisma from "../utils/prisma.js";
 
 export const createQR = async (req: Request, res: Response) => {
-    const { lattitude, longitude, policeStation, dutyPoint } = req.body
+    const { lattitude, longitude, policeStation, dutyPoint, cug } = req.body
 
     try {
 
@@ -27,7 +27,8 @@ export const createQR = async (req: Request, res: Response) => {
                 lattitude,
                 longitude,
                 policeStation,
-                dutyPoint
+                dutyPoint,
+                cug
             }
 
         })
@@ -193,6 +194,7 @@ export const createBulkQR = async (req: Request, res: Response) => {
                 lattitude: String(d.lattitude),
                 longitude: String(d.longitude),
                 policeStation: String(d.policeStation),
+                CUG: String(d.cug),
                 dutyPoint: d.dutyPoint ? String(d.dutyPoint) : null // Ensure dutyPoint is handled
             })),
             skipDuplicates: true // Good practice to prevent database errors if a unique constraint exists
@@ -223,6 +225,48 @@ export const deleteQR = async (req: Request, res: Response) => {
             message: "QR deleted successfully"
         })
 
+
+    } catch (error) {
+        res.status(500).json({ message: 'Internal Server Error', error: error })
+    }
+}
+
+export const deleteQRUndefined = async (req: Request, res: Response) => {
+    try {
+
+        await prisma.qR.deleteMany({
+            where: {
+                lattitude: "undefined"
+            }
+        })
+        res.status(201).json({
+            message: "QR deleted successfully"
+        })
+
+
+    } catch (error) {
+        res.status(500).json({ message: 'Internal Server Error', error: error })
+    }
+}
+
+
+export const updateCUG = async (req: Request, res: Response) => {
+    try {
+
+        const { policeStation, cug } = req.body
+
+        const data = await prisma.qR.updateMany({
+            where: {
+                policeStation: policeStation
+            }, data: {
+                cug: cug
+            }
+        })
+
+        return res.status(201).json({
+            message: "data upadted successfully",
+            data: data
+        })
 
     } catch (error) {
         res.status(500).json({ message: 'Internal Server Error', error: error })

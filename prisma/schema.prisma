@@ -68,6 +68,8 @@ model QR {
   longitude     String
   policeStation String
   dutyPoint     String?
+  cug           String?
+  CUG           String?
   // jab isScanned true hoga tab scannedbny and scanned on update honge
   isScanned     Boolean  @default(false)
   scannedOn     String?
