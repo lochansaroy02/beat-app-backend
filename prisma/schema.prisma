@@ -1,0 +1,97 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Photos {
+  id String @id @default(cuid())
+
+  aadharUrl String
+  selfieUrl String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  User   User?   @relation(fields: [userId], references: [id])
+  userId String?
+}
+
+model User {
+  id String @id @default(cuid())
+
+  employeeId       String @unique
+  name             String
+  pranNo           String
+  hrmsId           String
+  father           String
+  dob              String
+  designation      String
+  division         String
+  postingLocation  String
+  gradePay         String
+  group            String
+  railwayZone      String
+  dateOfIssueLater String
+  contact          String
+  address          String
+  nationality      String
+  maritalStatus    String
+  height           String
+  weight           String
+  religion         String
+  community        String
+  bloodGroup       String
+  identification   String
+  madicalStatus    String
+  aadharNumber     String
+
+  password String?
+
+  //bank details
+  accountNo   String?
+  bankName    String?
+  ifsc        String?
+  cif         String?
+  bankAddress String?
+
+  photoUrl String?
+
+  familyMembers familyMember[]
+
+  adminId String
+
+  admin  Admin    @relation(fields: [adminId], references: [id])
+  photos Photos[]
+}
+
+model familyMember {
+  id String @id @default(cuid())
+
+  name      String
+  aadhaar   String
+  relation  String
+  dob       String
+  age       Int
+  dependecy String
+
+  isNominee Boolean @default(false)
+
+  user   User?   @relation(fields: [userId], references: [id])
+  userId String?
+}
+
+model Admin {
+  id String @id @default(cuid())
+
+  email    String
+  password String
+  name     String
+  users    User[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
