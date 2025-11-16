@@ -130,6 +130,8 @@ export const login = async (req: Request, res: Response) => {
             id: user.id,
             pnoNo: user.pnoNo,
             name: user.name,
+            role: user.role
+
         };
 
         const token = jwt.sign(

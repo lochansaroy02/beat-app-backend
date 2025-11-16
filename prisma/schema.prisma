@@ -20,7 +20,8 @@ model Photos {
 }
 
 model User {
-  id       String  @id @default(cuid())
+  id String @id @default(cuid())
+
   pnoNo    String  @unique
   password String
   name     String?
@@ -67,13 +68,15 @@ model QR {
   lattitude     String
   longitude     String
   policeStation String
-  dutyPoint     String?
-  cug           String?
-  CUG           String?
+
+  catagory  String?
+  dutyPoint String?
+  cug       String?
+  CUG       String?
   // jab isScanned true hoga tab scannedbny and scanned on update honge
-  isScanned     Boolean  @default(false)
-  scannedOn     String?
-  scannedBy     String?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  isScanned Boolean  @default(false)
+  scannedOn String?
+  scannedBy String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

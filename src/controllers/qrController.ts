@@ -2,15 +2,16 @@ import { Request, Response } from "express";
 import prisma from "../utils/prisma.js";
 
 export const createQR = async (req: Request, res: Response) => {
-    const { lattitude, longitude, policeStation, dutyPoint, cug } = req.body
-
+    const { lattitude, longitude, policeStation, dutyPoint, cug, catagory } = req.body
     try {
 
-        if (!lattitude || !longitude || !policeStation) {
-            return res.status(400).json({
+        if (!lattitude || !longitude || !policeStation || !catagory) {
+            res.status(400).json({
                 message: 'lattitude,longitude and policeStation are required.'
             });
+            return
         }
+
         const isExisted = await prisma.qR.findFirst({
             where: {
                 lattitude,
@@ -28,6 +29,7 @@ export const createQR = async (req: Request, res: Response) => {
                 longitude,
                 policeStation,
                 dutyPoint,
+                catagory,
                 cug
             }
 
@@ -195,6 +197,7 @@ export const createBulkQR = async (req: Request, res: Response) => {
                 longitude: String(d.longitude),
                 policeStation: String(d.policeStation),
                 CUG: String(d.cug),
+
                 dutyPoint: d.dutyPoint ? String(d.dutyPoint) : null // Ensure dutyPoint is handled
             })),
             skipDuplicates: true // Good practice to prevent database errors if a unique constraint exists

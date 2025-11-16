@@ -43,6 +43,7 @@ app.use("/qr", qrRoutes);
 app.use("/photo", photosRoutes);
 app.use("/subAdmin", subAdminRoutes);
 
+
 // Health check
 app.get("/", (req: Request, res: Response) => {
     res.json({ message: "hello from Vercel Serverless Function!" });

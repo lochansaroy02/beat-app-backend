@@ -9,12 +9,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 import prisma from "../utils/prisma.js";
 export const createQR = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { lattitude, longitude, policeStation, dutyPoint, cug } = req.body;
+    const { lattitude, longitude, policeStation, dutyPoint, cug, catagory } = req.body;
     try {
-        if (!lattitude || !longitude || !policeStation) {
-            return res.status(400).json({
+        if (!lattitude || !longitude || !policeStation || !catagory) {
+            res.status(400).json({
                 message: 'lattitude,longitude and policeStation are required.'
             });
+            return;
         }
         const isExisted = yield prisma.qR.findFirst({
             where: {
@@ -32,6 +33,7 @@ export const createQR = (req, res) => __awaiter(void 0, void 0, void 0, function
                 longitude,
                 policeStation,
                 dutyPoint,
+                catagory,
                 cug
             }
         });

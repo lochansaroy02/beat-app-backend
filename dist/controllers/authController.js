@@ -109,6 +109,7 @@ export const login = (req, res) => __awaiter(void 0, void 0, void 0, function* (
             id: user.id,
             pnoNo: user.pnoNo,
             name: user.name,
+            role: user.role
         };
         const token = jwt.sign(tokenPayload, process.env.JWT_SECRET, { expiresIn: "7d" });
         return res.status(201).json({
