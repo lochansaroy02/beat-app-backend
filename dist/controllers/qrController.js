@@ -93,15 +93,20 @@ export const scanQRcode = (req, res) => __awaiter(void 0, void 0, void 0, functi
 });
 export const getQR = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { pnoNo } = req.params;
+    console.log(pnoNo);
     try {
         if (!pnoNo) {
-            return;
+            return res.status(400).json({
+                success: false,
+                message: "PNO number is required in the request parameters."
+            });
         }
         const qrData = yield prisma.qR.findMany({
             where: {
                 scannedBy: pnoNo
             }
         });
+        console.log(qrData);
         res.status(200).json({
             success: true,
             message: "qr data sent",

@@ -108,13 +108,19 @@ export const getQR = async (req: Request, res: Response) => {
     const { pnoNo } = req.params
     try {
         if (!pnoNo) {
-            return
+
+            return res.status(400).json({
+                success: false,
+                message: "PNO number is required in the request parameters."
+            });
         }
+
         const qrData = await prisma.qR.findMany({
             where: {
                 scannedBy: pnoNo
             }
         })
+
         res.status(200).json({
             success: true,
             message: "qr data sent",
