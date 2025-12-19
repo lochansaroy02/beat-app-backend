@@ -94,6 +94,7 @@ export const getUsers = (req, res) => __awaiter(void 0, void 0, void 0, function
                     select: {
                         url: true,
                         userId: true,
+                        clickedOn: true,
                         createdAt: true,
                     },
                 }
