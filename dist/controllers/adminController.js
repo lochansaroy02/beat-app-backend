@@ -92,15 +92,11 @@ export const getUsers = (req, res) => __awaiter(void 0, void 0, void 0, function
                 id: true,
                 photos: {
                     select: {
-                        url: true,
-                        userId: true,
-                        clickedOn: true,
-                        createdAt: true,
+                        url: true, userId: true
                     },
                 }
             }
         });
-        console.log(users);
         return res.status(201).json({
             success: true,
             message: "user Data",

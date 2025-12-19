@@ -10,32 +10,29 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 import prisma from "../utils/prisma.js";
 export const addPhoto = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        // 1. Change destructuring to match your Frontend payload (photos instead of photoUrl)
-        const { photos, userId } = req.body;
-        // 2. Update the validation logic
-        if (!photos || !userId) {
+        const { photoUrl, userId } = req.body;
+        if (!photoUrl || !userId) {
             return res.status(400).json({
                 success: false,
-                message: "Missing required fields: photos or userId",
+                message: "Missing required fields: photoUrl or qrId",
             });
         }
-        // 3. Normalize: Ensure photos is an array even if a single object is sent
-        const photosArray = Array.isArray(photos) ? photos : [photos];
-        // 4. Prepare data for Prisma
-        const photoData = photosArray.map((item) => ({
-            url: item.url,
-            clickedOn: item.clickedOn, // This captures the date sent from the app
+        // 1. Normalize the photoUrl into an array
+        const photoUrlsArray = Array.isArray(photoUrl) ? photoUrl : [photoUrl];
+        // 2. Prepare data for P risma
+        // We map the array of URLs into an array of objects for Prisma's createMany or create
+        const photoData = photoUrlsArray.map(url => ({
+            url: url,
             userId: userId,
         }));
         let results;
         if (photoData.length === 1) {
-            // Use `create` for a single entry
+            // Option A: Use `create` for a single entry
             results = yield prisma.photos.create({
                 data: photoData[0],
             });
         }
         else {
-            // Use `createMany` for bulk uploads
             results = yield prisma.photos.createMany({
                 data: photoData,
                 skipDuplicates: true,
@@ -43,7 +40,7 @@ export const addPhoto = (req, res) => __awaiter(void 0, void 0, void 0, function
         }
         res.status(201).json({
             success: true,
-            message: `${photoData.length} photo(s) saved successfully.`,
+            message: `${photoUrlsArray.length} photo(s) saved successfully.`,
             data: results,
         });
     }

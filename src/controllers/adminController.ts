@@ -112,18 +112,15 @@ export const getUsers = async (req: Request, res: Response) => {
             select: {
                 name: true,
                 pnoNo: true,
+
                 id: true,
                 photos: {
                     select: {
-                        url: true,
-                        userId: true,
-                        clickedOn: true,
-                        createdAt: true,
+                        url: true, userId: true
                     },
                 }
             }
         })
-        console.log(users);
         return res.status(201).json({
             success: true,
             message: "user Data",
