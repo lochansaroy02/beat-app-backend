@@ -1,1 +1,0 @@
-{"version":3,"file":"subAdminRoutes.js","sourceRoot":"","sources":["../../src/routes/subAdminRoutes.ts"],"names":[],"mappings":"AAAA,OAAO,OAAO,MAAM,SAAS,CAAC;AAC9B,OAAO,EAAE,cAAc,EAAE,aAAa,EAAE,MAAM,sCAAsC,CAAC;AAErF,MAAM,MAAM,GAAG,OAAO,CAAC,MAAM,EAAE,CAAC;AAGhC,MAAM,CAAC,IAAI,CAAC,SAAS,EAAE,cAAc,CAAC,CAAA;AACtC,MAAM,CAAC,IAAI,CAAC,QAAQ,EAAE,aAAa,CAAC,CAAA;AAKpC,eAAe,MAAM,CAAA"}
