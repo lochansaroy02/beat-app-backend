@@ -14,41 +14,51 @@ export const addPhoto = (req, res) => __awaiter(void 0, void 0, void 0, function
         if (!photoUrl || !userId) {
             return res.status(400).json({
                 success: false,
-                message: "Missing required fields: photoUrl or qrId",
+                message: "Missing required fields: photoUrl or userId",
             });
         }
-        // 1. Normalize the photoUrl into an array
         const photoUrlsArray = Array.isArray(photoUrl) ? photoUrl : [photoUrl];
-        // 2. Prepare data for P risma
-        // We map the array of URLs into an array of objects for Prisma's createMany or create
         const photoData = photoUrlsArray.map(url => ({
             url: url,
             userId: userId,
         }));
-        let results;
-        if (photoData.length === 1) {
-            // Option A: Use `create` for a single entry
-            results = yield prisma.photos.create({
-                data: photoData[0],
+        // Use a Transaction to ensure both operations succeed or fail together
+        const result = yield prisma.$transaction((tx) => __awaiter(void 0, void 0, void 0, function* () {
+            // 1. Save the photo(s)
+            let savedPhotos;
+            if (photoData.length === 1) {
+                savedPhotos = yield tx.photos.create({
+                    data: photoData[0],
+                });
+            }
+            else {
+                savedPhotos = yield tx.photos.createMany({
+                    data: photoData,
+                    skipDuplicates: true,
+                });
+            }
+            const updatedUser = yield tx.user.update({
+                where: { id: userId },
+                data: {
+                    totalCount: {
+                        increment: 1
+                    }
+                }
             });
-        }
-        else {
-            results = yield prisma.photos.createMany({
-                data: photoData,
-                skipDuplicates: true,
-            });
-        }
+            return { savedPhotos, updatedUser };
+        }));
         res.status(201).json({
             success: true,
-            message: `${photoUrlsArray.length} photo(s) saved successfully.`,
-            data: results,
+            message: "Attendance marked and photo saved successfully.",
+            data: result.savedPhotos,
+            currentCount: result.updatedUser.totalCount
         });
     }
     catch (error) {
-        console.error("Error saving photo(s):", error);
+        console.error("Error in photo upload transaction:", error);
         res.status(500).json({
             success: false,
-            message: "Internal Server Error during photo save.",
+            message: "Failed to process attendance.",
             error: error.message
         });
     }
