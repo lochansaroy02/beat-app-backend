@@ -112,7 +112,7 @@ export const getUsers = async (req: Request, res: Response) => {
             select: {
                 name: true,
                 pnoNo: true,
-
+                totalCount: true,
                 id: true,
                 photos: {
                     select: {

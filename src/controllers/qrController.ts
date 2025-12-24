@@ -48,61 +48,56 @@ export const createQR = async (req: Request, res: Response) => {
 }
 
 
-const formatDate = (date: Date): string => {
-    const dd = String(date.getDate()).padStart(2, "0");
-    const mm = String(date.getMonth() + 1).padStart(2, "0");
-    const yyyy = date.getFullYear();
-
-    let hh = date.getHours();
-    const min = String(date.getMinutes()).padStart(2, "0");
-
-    const ampm = hh >= 12 ? "PM" : "AM";
-    hh = hh % 12;
-    hh = hh ? hh : 12; // convert 0 (midnight) to 12
-
-    const hhStr = String(hh).padStart(2, "0");
-
-    return `${dd}-${mm}-${yyyy} ${hhStr}:${min} ${ampm}`;
-};
-
-
-
 export const scanQRcode = async (req: Request, res: Response) => {
-    const { lattitude, longitude, pnoNo, dutyPoint, date } = req.body
+    const { lattitude, longitude, pnoNo, dutyPoint, date } = req.body;
+
+    // Log exactly what is being received with brackets to spot spaces
+    console.log(`Received: Lat [${lattitude}], Lon [${longitude}]`);
 
     try {
-
         if (!lattitude || !longitude) {
-            return res.status(400).json({ message: 'lattitude,longitude and policeStation are required.' });
+            return res.status(400).json({ message: 'Lattitude and longitude are required.' });
         }
 
+        // SANITIZE: Remove any possible accidental quotes or extra spaces
+        const cleanLat = String(lattitude).trim().replace(/['"]/g, '');
+        const cleanLon = String(longitude).trim().replace(/['"]/g, '');
+
+        // Use "contains" for a more flexible match
         const qrData = await prisma.qR.findFirst({
             where: {
-                lattitude, longitude,
+                lattitude: { contains: cleanLat },
+                longitude: { contains: cleanLon },
             }
-        })
-        const scannedDate = new Date();
-        const formattedDate = formatDate(scannedDate);
+        });
+
+        console.log("Database Search Result:", qrData ? "Found" : "Not Found");
+
+        if (!qrData) {
+            // HELPER: If not found, log one entry from the DB to see why it's mismatching
+            const sample = await prisma.qR.findFirst();
+            console.log("DB Sample for Comparison:", sample ? `[${sample.lattitude}] [${sample.longitude}]` : "DB is empty");
+
+            return res.status(404).json({ message: "Selected QR not found in database." });
+        }
+
         await prisma.qR.update({
-            where: {
-                id: qrData?.id
-            },
+            where: { id: qrData.id },
             data: {
                 isScanned: true,
-                scannedBy: pnoNo,
+                scannedBy: String(pnoNo),
                 dutyPoint: dutyPoint,
                 scannedOn: date
             }
-        })
-        res.status(200).json({
-            message: "qr data updated"
-        })
+        });
 
-    } catch (error) {
-        res.status(500).json({ message: 'Internal Server Error', error: error })
+        res.status(200).json({ message: "qr data updated" });
+
+    } catch (error: any) {
+        console.error("Prisma Error:", error);
+        res.status(500).json({ message: 'Internal Server Error', error: error.message });
     }
-
-}
+};
 
 export const getQR = async (req: Request, res: Response) => {
     const { pnoNo } = req.params
