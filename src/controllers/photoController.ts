@@ -1,9 +1,10 @@
 import { Request, Response } from "express";
 import prisma from "../utils/prisma.js";
 
+
 export const addPhoto = async (req: Request, res: Response) => {
     try {
-        const { photos, userId } = req.body;
+        const { photos, userId, qrId } = req.body; // Added qrId
 
         // 1. Validation
         if (!photos || !userId || !Array.isArray(photos)) {
@@ -17,45 +18,72 @@ export const addPhoto = async (req: Request, res: Response) => {
         const photoData = photos.map(p => ({
             url: p.url,
             userId: userId,
-            // Convert the frontend ISO string to a Date object
+            qRId: qrId || null, // Link to the QR record if provided
             clickedOn: p.clickedOn ? String(p.clickedOn) : new Date().toISOString()
         }));
 
         // 3. Execute Transaction
         const result = await prisma.$transaction(async (tx) => {
-            // Save all photos in the array (1 or many)
             const savedResult = await tx.photos.createMany({
                 data: photoData,
                 skipDuplicates: true,
             });
 
-            // ✅ INCREMENT BY 1 ONLY (Regardless of photo count)
             const updatedUser = await tx.user.update({
                 where: { id: userId },
-                data: {
-                    totalCount: {
-                        increment: 1
-                    }
-                }
+                data: { totalCount: { increment: 1 } }
             });
 
             return { savedResult, updatedUser };
         });
 
-        // 4. Success Response
         res.status(201).json({
             success: true,
-            message: "Submission successful. Attendance count increased by 1.",
+            message: "Submission successful. Attendance count increased.",
             photosSaved: photoData.length,
             currentTotalCount: result.updatedUser.totalCount
         });
 
     } catch (error: any) {
         console.error("Transaction Error:", error);
-        res.status(500).json({
-            success: false,
-            message: "Internal Server Error",
-            error: error.message
-        });
+        res.status(500).json({ success: false, message: "Internal Server Error" });
     }
 };
+
+
+export const getPhotoByID = async (req: Request, res: Response) => {
+    try {
+
+
+        const { userId, qrId } = req.body; // Added qrId
+
+        // 1. Validation
+        if (!qrId || !userId) {
+            return res.status(400).json({
+                success: false,
+                message: "No qrId and userId found",
+            });
+        }
+
+
+        const photos = await prisma.photos.findMany({
+            where: {
+                userId: userId,
+                qRId: qrId
+
+            }
+        })
+
+        res.status(201).json({
+            success: true,
+            message: "Photos are fetched",
+            photos: photos
+        });
+
+    } catch (error: any) {
+        console.error("Transaction Error:", error);
+        res.status(500).json({ success: false, message: "Internal Server Error" });
+    }
+};
+
+

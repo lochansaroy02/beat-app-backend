@@ -91,7 +91,10 @@ export const scanQRcode = async (req: Request, res: Response) => {
             }
         });
 
-        res.status(200).json({ message: "qr data updated" });
+        res.status(200).json({
+            message: "qr data updated",
+            qrId: qrData?.id
+        });
 
     } catch (error: any) {
         console.error("Prisma Error:", error);
@@ -101,6 +104,8 @@ export const scanQRcode = async (req: Request, res: Response) => {
 
 export const getQR = async (req: Request, res: Response) => {
     const { pnoNo } = req.params
+
+
     try {
         if (!pnoNo) {
 
@@ -112,7 +117,21 @@ export const getQR = async (req: Request, res: Response) => {
 
         const qrData = await prisma.qR.findMany({
             where: {
-                scannedBy: pnoNo
+                scannedBy: pnoNo,
+
+            },
+            select: {
+                lattitude: true,
+                longitude: true,
+                policeStation: true,
+                scannedOn: true,
+                photos: {
+                    select: {
+                        url: true,
+                        clickedOn: true,
+                    }
+
+                }
             }
         })
 
@@ -270,6 +289,28 @@ export const updateCUG = async (req: Request, res: Response) => {
         return res.status(201).json({
             message: "data upadted successfully",
             data: data
+        })
+
+    } catch (error) {
+        res.status(500).json({ message: 'Internal Server Error', error: error })
+    }
+}
+
+export const getQRId = async (req: Request, res: Response) => {
+    try {
+
+        const { lattitude, longitude } = req.body
+
+        const qr = await prisma.qR.findFirst({
+            where: {
+                lattitude: lattitude,
+                longitude: longitude
+            }
+        })
+
+        return res.status(201).json({
+            message: "data upadted successfully",
+            data: qr?.id
         })
 
     } catch (error) {

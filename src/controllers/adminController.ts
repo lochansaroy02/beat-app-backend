@@ -116,7 +116,9 @@ export const getUsers = async (req: Request, res: Response) => {
                 id: true,
                 photos: {
                     select: {
-                        url: true, userId: true
+                        url: true,
+                        clickedOn: true,
+                        userId: true
                     },
                 }
             }

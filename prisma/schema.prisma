@@ -9,19 +9,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Photos {
-  id        String   @id @default(cuid())
-  url       String
-  clickedOn String?
-  // lattitude String 
-  // longitude String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  User   User?   @relation(fields: [userId], references: [id])
-  userId String?
-}
-
 model User {
   id String @id @default(cuid())
 
@@ -79,9 +66,24 @@ model QR {
   cug       String?
   CUG       String?
   // jab isScanned true hoga tab scannedbny and scanned on update honge
-  isScanned Boolean  @default(false)
+  isScanned Boolean @default(false)
   scannedOn String?
   scannedBy String?
+
+  photos    Photos[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model Photos {
+  id        String   @id @default(cuid())
+  url       String
+  clickedOn String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  User   User?   @relation(fields: [userId], references: [id])
+  userId String?
+  qr     QR?     @relation(fields: [qRId], references: [id])
+  qRId   String?
 }

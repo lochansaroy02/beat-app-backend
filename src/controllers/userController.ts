@@ -48,3 +48,37 @@ export const updateUser = async (req: Request, res: Response) => {
         });
     }
 }
+
+export const updatePoliceStaion = async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params;
+        const { co, policeStation, } = req.body;
+
+        // --- Input Validation: Ch eck for adminId ---
+        if (!id) {
+            return res.status(500).json({ message: 'Internal Server Error: Admin ID missing' });
+        }
+
+
+        const user = await prisma.user.update({
+            data: {
+                co: co,
+                policeStation: policeStation
+            },
+            where: {
+                id: id
+            }
+        })
+        return res.status(201).json({ message: 'user Updated' })
+
+
+
+    } catch (error) {
+        // Log the error for debugging purposes in a real application
+        console.error("Signup Error:", error);
+        return res.status(500).json({
+            message: 'Internal Server Error',
+            error: error instanceof Error ? error.message : String(error)
+        });
+    }
+}
