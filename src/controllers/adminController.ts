@@ -109,19 +109,6 @@ export const getUsers = async (req: Request, res: Response) => {
             where: {
                 adminId,
             },
-            select: {
-                name: true,
-                pnoNo: true,
-                totalCount: true,
-                id: true,
-                photos: {
-                    select: {
-                        url: true,
-                        clickedOn: true,
-                        userId: true
-                    },
-                }
-            }
         })
         return res.status(201).json({
             success: true,
@@ -134,6 +121,8 @@ export const getUsers = async (req: Request, res: Response) => {
         res.status(500).json({ message: 'Internal Server Error', error: error })
     }
 }
+
+
 
 
 export const deleteUser = async (req: Request, res: Response) => {
@@ -157,3 +146,102 @@ export const deleteUser = async (req: Request, res: Response) => {
         res.status(500).json({ message: 'Internal Server Error', error: error })
     }
 }
+
+
+
+
+
+
+export const createUsers = async (req: Request, res: Response) => {
+    const { adminId } = req.params;
+    let usersData = req.body;
+    // Frontend sends [user] or [user1, user2...]
+    // If it's a single object, wrap it in an array so the rest of the code works
+    if (usersData && typeof usersData === 'object' && !Array.isArray(usersData)) {
+        usersData = [usersData];
+    }
+
+    try {
+        // 1. Validation
+        if (!adminId) {
+            return res.status(400).json({ message: 'Admin ID is required' });
+        }
+
+        if (!Array.isArray(usersData) || usersData.length === 0) {
+            return res.status(400).json({ message: 'Invalid data format. Expected an array of users.' });
+        }
+
+        const createdUsers = [];
+        const errors = [];
+
+        // 2. Process each user in the array
+        for (const user of usersData) {
+            const { name, pnoNo, password, co, policeStation } = user;
+
+            try {
+                // Basic check for required fields per user
+                if (!name || !pnoNo || !password) {
+                    errors.push({ pnoNo: pnoNo || "Unknown", message: "Missing required fields" });
+                    continue;
+                }
+
+                // Check for duplicate PNo No
+                const existing = await prisma.user.findUnique({ where: { pnoNo } });
+                if (existing) {
+                    errors.push({ pnoNo, message: "User already exists" });
+                    continue;
+                }
+
+                // Hash password
+                const hashedPassword = await bcrypt.hash(password, 10);
+
+                // Create user
+                const newUser = await prisma.user.create({
+                    data: {
+                        name,
+                        pnoNo,
+                        password: hashedPassword,
+                        co,
+                        policeStation,
+                        adminId: adminId
+                        // If you have a relation to the admin who created them:
+                        // creator: { connect: { id: adminId } } 
+                    }
+                });
+
+                createdUsers.push(newUser);
+            } catch (err: any) {
+                errors.push({ pnoNo: user.pnoNo, message: err.message });
+            }
+        }
+
+        // 3. Construct the Response based on results
+
+        // Scenario A: Everything failed
+        if (createdUsers.length === 0) {
+            return res.status(400).json({
+                message: "No users were created",
+                errors: errors
+            });
+        }
+
+        // Scenario B: Partial Success (Important for your frontend's 207 check)
+        if (errors.length > 0) {
+            return res.status(207).json({
+                message: "Bulk creation partially successful",
+                data: createdUsers,
+                errors: errors
+            });
+        }
+
+        // Scenario C: Total Success
+        return res.status(201).json({
+            message: usersData.length > 1 ? "All users created successfully" : "User created successfully",
+            data: createdUsers
+        });
+
+    } catch (error: any) {
+        console.error("Controller Error:", error);
+        return res.status(500).json({ message: 'Internal Server Error', error: error.message });
+    }
+};

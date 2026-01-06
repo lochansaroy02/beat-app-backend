@@ -30,7 +30,7 @@ export const createQR = async (req: Request, res: Response) => {
                 policeStation,
                 dutyPoint,
                 catagory,
-                cug
+
             }
 
         })
@@ -48,66 +48,93 @@ export const createQR = async (req: Request, res: Response) => {
 }
 
 
-export const scanQRcode = async (req: Request, res: Response) => {
-    const { lattitude, longitude, pnoNo, dutyPoint, date } = req.body;
 
-    // Log exactly what is being received with brackets to spot spaces
-    console.log(`Received: Lat [${lattitude}], Lon [${longitude}]`);
+
+export const scanQRcode = async (req: Request, res: Response) => {
+    const { latitude, longitude, pnoNo, dutyPoint, date, userId } = req.body;
 
     try {
-        if (!lattitude || !longitude) {
-            return res.status(400).json({ message: 'Lattitude and longitude are required.' });
+        if (!latitude || !longitude) {
+            return res.status(400).json({
+                message: "Latitude and longitude are required",
+            });
         }
 
-        // SANITIZE: Remove any possible accidental quotes or extra spaces
-        const cleanLat = String(lattitude).trim().replace(/['"]/g, '');
-        const cleanLon = String(longitude).trim().replace(/['"]/g, '');
+        // clean coordinates
+        const cleanLat = String(latitude).trim().replace(/['"]/g, "");
+        const cleanLon = String(longitude).trim().replace(/['"]/g, "");
 
-        // Use "contains" for a more flexible match
+        /**
+         * 1️⃣ Find QR by coordinates
+         */
         const qrData = await prisma.qR.findFirst({
             where: {
-                lattitude: { contains: cleanLat },
-                longitude: { contains: cleanLon },
-            }
+                lattitude: cleanLat,
+                longitude: cleanLon,
+            },
         });
 
-        console.log("Database Search Result:", qrData ? "Found" : "Not Found");
-
         if (!qrData) {
-            // HELPER: If not found, log one entry from the DB to see why it's mismatching
-            const sample = await prisma.qR.findFirst();
-            console.log("DB Sample for Comparison:", sample ? `[${sample.lattitude}] [${sample.longitude}]` : "DB is empty");
-
-            return res.status(404).json({ message: "Selected QR not found in database." });
+            return res.status(404).json({
+                message: "QR not found for this location",
+            });
         }
 
+        /**
+         * 2️⃣ Prevent double scan
+         */
+        if (qrData.scannedBy) {
+            return res.status(409).json({
+                message: "QR already scanned",
+                scannedBy: qrData.scannedBy,
+                scannedOn: qrData.scannedOn,
+            });
+        }
+
+        /**
+         * 3️⃣ Update QR scan info
+         */
         await prisma.qR.update({
             where: { id: qrData.id },
             data: {
-                isScanned: true,
                 scannedBy: String(pnoNo),
+                scannedOn: date,
                 dutyPoint: dutyPoint,
-                scannedOn: date
-            }
+                userId: userId,
+            },
         });
 
-        res.status(200).json({
-            message: "qr data updated",
-            qrId: qrData?.id
+        /**
+         * 4️⃣ Increment user total scan count
+         */
+        await prisma.user.update({
+            where: { id: userId },
+            data: {
+                totalCount: {
+                    increment: 1,
+                },
+            },
         });
 
+        return res.status(200).json({
+            message: "QR scanned successfully",
+            qrId: qrData.id,
+        });
     } catch (error: any) {
-        console.error("Prisma Error:", error);
-        res.status(500).json({ message: 'Internal Server Error', error: error.message });
+        console.error("Scan QR Error:", error);
+        return res.status(500).json({
+            message: "Internal Server Error",
+            error: error.message,
+        });
     }
 };
 
-export const getQR = async (req: Request, res: Response) => {
-    const { pnoNo } = req.params
 
+export const getQR = async (req: Request, res: Response) => {
+    const { id } = req.params
 
     try {
-        if (!pnoNo) {
+        if (!id) {
 
             return res.status(400).json({
                 success: false,
@@ -117,7 +144,7 @@ export const getQR = async (req: Request, res: Response) => {
 
         const qrData = await prisma.qR.findMany({
             where: {
-                scannedBy: pnoNo,
+                userId: id
 
             },
             select: {
@@ -125,7 +152,8 @@ export const getQR = async (req: Request, res: Response) => {
                 longitude: true,
                 policeStation: true,
                 scannedOn: true,
-                photos: {
+                dutyPoint: true,
+                photo: {
                     select: {
                         url: true,
                         clickedOn: true,
@@ -142,7 +170,8 @@ export const getQR = async (req: Request, res: Response) => {
         })
 
     } catch (error) {
-        res.status(500).json({ message: 'Internal Server Error', error: error })
+        console.error("PRISMA ERROR:", error); // Check your terminal/logs for this!
+        res.status(500).json({ message: 'Internal Server Error', error: error });
     }
 }
 export const getAllQR = async (req: Request, res: Response) => {
@@ -212,12 +241,12 @@ export const createBulkQR = async (req: Request, res: Response) => {
         // 2. Use prisma's createMany for efficient bulk insertion
         // Note: createMany does not return the created records' data by default
         const result = await prisma.qR.createMany({
+            //fix this code
+            //@ts-ignore
             data: newDataToCreate.map(d => ({
                 lattitude: String(d.lattitude),
                 longitude: String(d.longitude),
                 policeStation: String(d.policeStation),
-                CUG: String(d.cug),
-
                 dutyPoint: d.dutyPoint ? String(d.dutyPoint) : null // Ensure dutyPoint is handled
             })),
             skipDuplicates: true // Good practice to prevent database errors if a unique constraint exists
@@ -254,23 +283,6 @@ export const deleteQR = async (req: Request, res: Response) => {
     }
 }
 
-export const deleteQRUndefined = async (req: Request, res: Response) => {
-    try {
-
-        await prisma.qR.deleteMany({
-            where: {
-                lattitude: "undefined"
-            }
-        })
-        res.status(201).json({
-            message: "QR deleted successfully"
-        })
-
-
-    } catch (error) {
-        res.status(500).json({ message: 'Internal Server Error', error: error })
-    }
-}
 
 
 export const updateCUG = async (req: Request, res: Response) => {
@@ -298,22 +310,50 @@ export const updateCUG = async (req: Request, res: Response) => {
 
 export const getQRId = async (req: Request, res: Response) => {
     try {
+        // 1. Use req.query for GET requests
+        // Note: Destructuring as string to ensure compatibility with Prisma where needed
+        const { latitude, longitude } = req.query;
 
-        const { lattitude, longitude } = req.body
+        if (!latitude || !longitude) {
+            return res.status(400).json({
+                success: false,
+                message: "Missing latitude or longitude parameters"
+            });
+        }
 
+        // 2. Find the QR in the database
+        // Use findFirst or findUnique depending on your schema constraints
         const qr = await prisma.qR.findFirst({
             where: {
-                lattitude: lattitude,
-                longitude: longitude
+                // Ensure these match your Prisma schema field names exactly
+                lattitude: String(latitude),
+                longitude: String(longitude)
             }
-        })
+        });
 
-        return res.status(201).json({
-            message: "data upadted successfully",
-            data: qr?.id
-        })
+        // 3. Handle 'Not Found' case
+        if (!qr) {
+            return res.status(404).json({
+                success: false,
+                message: "This location is not registered as a valid Duty Point."
+            });
+        }
+
+        // 4. Return Success
+        return res.status(200).json({
+            success: true,
+            message: "QR Verified Successfully",
+            qrId: qr.id // This is the ID your frontend is expecting
+        });
 
     } catch (error) {
-        res.status(500).json({ message: 'Internal Server Error', error: error })
+        console.error("Error finding QR:", error);
+        return res.status(500).json({
+            success: false,
+            message: 'Internal Server Error',
+            error: error
+        });
     }
-}
+};
+
+

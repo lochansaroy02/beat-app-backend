@@ -133,9 +133,6 @@ export const login = async (req: Request, res: Response) => {
             role: user.role,
             co: user.co,
             policeStation: user.policeStation
-
-
-
         };
 
         const token = jwt.sign(
@@ -155,7 +152,6 @@ export const login = async (req: Request, res: Response) => {
     }
 
 }
-// NOTE: Assuming you have 'prisma', 'Request', and 'Response' types available
 
 export const changePassword = async (req: Request, res: Response) => {
 
@@ -210,3 +206,4 @@ export const changePassword = async (req: Request, res: Response) => {
         res.status(500).json({ message: 'Internal Server Error' });
     }
 };
+

@@ -7,6 +7,7 @@ import authRoutes from "./routes/authRoutes.js";
 import photosRoutes from "./routes/photosRoutes.js";
 import qrRoutes from "./routes/qrRoutes.js";
 import subAdminRoutes from "./routes/subAdminRoutes.js";
+import userRoutes from "./routes/userRoutes.js";
 
 const app = express();
 app.use(express.json());
@@ -44,6 +45,7 @@ app.use("/auth", authRoutes);
 app.use("/qr", qrRoutes);
 app.use("/photo", photosRoutes);
 app.use("/subAdmin", subAdminRoutes);
+app.use("/user", userRoutes);
 
 
 // Health check
@@ -54,8 +56,8 @@ app.get("/", (req: Request, res: Response) => {
 // Local dev only
 if (process.env.NODE_ENV !== "production" || !process.env.VERCEL) {
     const port = process.env.PORT || 8080;
-    app.listen(port, () => {
-        console.log(`🚀 Server running locally on port ${port}`);
+    app.listen(8080, "0.0.0.0", () => {
+        console.log("Server running on 8080");
     });
 }
 
