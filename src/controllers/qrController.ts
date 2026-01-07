@@ -341,13 +341,8 @@ export const getQRId = async (req: Request, res: Response) => {
 
 export const getQRData = async (req: Request, res: Response) => {
     try {
-        // Fetch only users where the qrCode array is NOT empty
+        // Fetch only users where the qrCode array is NOT empty 
         const users = await prisma.user.findMany({
-            where: {
-                qrCode: {
-                    some: {} // This ensures at least one QR record exists for the user
-                }
-            },
             select: {
                 pnoNo: true,
                 name: true,
@@ -383,5 +378,35 @@ export const getQRData = async (req: Request, res: Response) => {
             success: false,
             message: "Internal server error"
         });
+    }
+}
+
+
+export const editQRData = async (req: Request, res: Response) => {
+    console.log(`function trigger `);
+    const { id } = req.params
+    const { latitude, longitude, catagory } = req.body
+    console.log(latitude, longitude, catagory);
+    try {
+        if (!id) {
+            res.status(500).json({ message: 'No qr selected', })
+            return;
+        }
+        const data = await prisma.qR.update({
+            where: { id: id },
+            data: {
+                lattitude: latitude,
+                longitude: longitude,
+                catagory: catagory
+            }
+        })
+
+        res.status(200).json({
+            message: "qr data updated",
+            success: true,
+
+        })
+    } catch (error) {
+        res.status(500).json({ message: 'Internal Server Error', error: error })
     }
 }
