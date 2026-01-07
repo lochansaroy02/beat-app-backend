@@ -247,6 +247,7 @@ export const createBulkQR = async (req: Request, res: Response) => {
                 lattitude: String(d.lattitude),
                 longitude: String(d.longitude),
                 policeStation: String(d.policeStation),
+                catagory: String(d.catagory),
                 dutyPoint: d.dutyPoint ? String(d.dutyPoint) : null // Ensure dutyPoint is handled
             })),
             skipDuplicates: true // Good practice to prevent database errors if a unique constraint exists
@@ -285,28 +286,28 @@ export const deleteQR = async (req: Request, res: Response) => {
 
 
 
-// export const updateCUG = async (req: Request, res: Response) => {
-//     try {
+export const updateCUG = async (req: Request, res: Response) => {
+    try {
 
-//         const { policeStation, cug } = req.body
+        const { policeStation, cug } = req.body
 
-//         const data = await prisma.qR.updateMany({
-//             where: {
-//                 policeStation: policeStation
-//             }, data: {
-//                 cug: cug
-//             }
-//         })
+        const data = await prisma.qR.updateMany({
+            where: {
+                policeStation: policeStation
+            }, data: {
+                cug: cug
+            }
+        })
 
-//         return res.status(201).json({
-//             message: "data upadted successfully",
-//             data: data
-//         })
+        return res.status(201).json({
+            message: "data upadted successfully",
+            data: data
+        })
 
-//     } catch (error) {
-//         res.status(500).json({ message: 'Internal Server Error', error: error })
-//     }
-// }
+    } catch (error) {
+        res.status(500).json({ message: 'Internal Server Error', error: error })
+    }
+}
 
 export const getQRId = async (req: Request, res: Response) => {
     try {
@@ -357,3 +358,54 @@ export const getQRId = async (req: Request, res: Response) => {
 };
 
 
+
+
+
+
+
+export const getQRData = async (req: Request, res: Response) => {
+    try {
+        // Fetch only users where the qrCode array is NOT empty
+        const users = await prisma.user.findMany({
+            where: {
+                qrCode: {
+                    some: {} // This ensures at least one QR record exists for the user
+                }
+            },
+            select: {
+                pnoNo: true,
+                name: true,
+                policeStation: true,
+                qrCode: {
+                    select: {
+                        scannedOn: true
+                    },
+                    orderBy: {
+                        createdAt: 'desc'
+                    }
+                }
+            }
+        });
+
+        // Map to the requested format
+        const formattedData = users.map(user => ({
+            pnoNo: user.pnoNo,
+            name: user.name,
+            policeStation: user.policeStation,
+            qrData: user.qrCode
+        }));
+
+        return res.status(200).json({
+            success: true,
+            count: formattedData.length,
+            data: formattedData
+        });
+
+    } catch (error) {
+        console.error("Error fetching active scans:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error"
+        });
+    }
+}

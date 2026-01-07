@@ -98,27 +98,32 @@ export const login = async (req: Request, res: Response) => {
     }
 
 }
-
 export const getUsers = async (req: Request, res: Response) => {
+    const { adminId } = req.params;
 
-    const { adminId } = req.params
+    console.log("Searching for users with adminId:", adminId);
 
     try {
+        // Test: Count all users regardless of adminId to verify DB connection
+        const totalCount = await prisma.user.count();
 
         const users = await prisma.user.findMany({
             where: {
-                adminId,
+                adminId: adminId, // Ensure this matches your schema field name
             },
-        })
-        return res.status(201).json({
-            success: true,
-            message: "user Data",
-            data: users
         });
 
 
+        return res.status(200).json({
+            success: true,
+            totalInDb: totalCount,
+            countFound: users.length,
+            data: users
+        });
+
     } catch (error) {
-        res.status(500).json({ message: 'Internal Server Error', error: error })
+        console.error("Prisma Error:", error);
+        res.status(500).json({ message: 'Internal Server Error', error });
     }
 }
 

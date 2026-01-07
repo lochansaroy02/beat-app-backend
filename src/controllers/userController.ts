@@ -213,3 +213,42 @@ export const getPersonData = async (req: Request, res: Response) => {
         });
     }
 };
+
+export const fixData = async (req: Request, res: Response) => {
+    try {
+        const { policeStation } = req.params;
+
+        if (!policeStation) {
+            return res.status(400).json({ message: 'User ID is required' });
+        }
+
+
+        const user = await prisma.user.findMany({
+            where: { policeStation },
+            select: {
+                id: true,
+                name: true,
+                pnoNo: true,
+                policeStation: true
+            },
+        });
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+
+        return res.status(200).json({
+            message: "Data",
+            success: true,
+            data: user
+        });
+
+    } catch (error) {
+        console.error("Fetch User Error:", error);
+        return res.status(500).json({
+            message: 'Internal Server Error',
+            error: error instanceof Error ? error.message : String(error)
+        });
+    }
+};
