@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import prisma from "../utils/prisma.js";
 
 export const createQR = async (req: Request, res: Response) => {
-    const { lattitude, longitude, policeStation, dutyPoint, cug, catagory } = req.body
+    const { lattitude, longitude, policeStation, dutyPoint, catagory } = req.body
     try {
 
         if (!lattitude || !longitude || !policeStation || !catagory) {
@@ -284,30 +284,6 @@ export const deleteQR = async (req: Request, res: Response) => {
     }
 }
 
-
-
-export const updateCUG = async (req: Request, res: Response) => {
-    try {
-
-        const { policeStation, cug } = req.body
-
-        const data = await prisma.qR.updateMany({
-            where: {
-                policeStation: policeStation
-            }, data: {
-                cug: cug
-            }
-        })
-
-        return res.status(201).json({
-            message: "data upadted successfully",
-            data: data
-        })
-
-    } catch (error) {
-        res.status(500).json({ message: 'Internal Server Error', error: error })
-    }
-}
 
 export const getQRId = async (req: Request, res: Response) => {
     try {
