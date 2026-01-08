@@ -268,22 +268,34 @@ export const createBulkQR = async (req: Request, res: Response) => {
 
 export const deleteQR = async (req: Request, res: Response) => {
     try {
-        const { qrId } = req.params
+        const { qrId } = req.params;
+
+        if (!qrId) {
+            res.status(400).json({ message: "QR ID is required" });
+            return
+        }
+
+        // Attempt delete
         await prisma.qR.delete({
             where: {
                 id: qrId
             }
-        })
-        res.status(201).json({
+        });
+
+        res.status(200).json({
             message: "QR deleted successfully"
-        })
+        });
 
-
-    } catch (error) {
-        res.status(500).json({ message: 'Internal Server Error', error: error })
+    } catch (error: any) {
+        // Prisma error code for "Record to delete does not exist" is P2025
+        if (error.code === 'P2025') {
+            res.status(404).json({ message: 'Record not found' });
+            return
+        }
+        console.error("Delete Error:", error);
+        res.status(500).json({ message: 'Internal Server Error', error: error });
     }
 }
-
 
 export const getQRId = async (req: Request, res: Response) => {
     try {
@@ -383,30 +395,44 @@ export const getQRData = async (req: Request, res: Response) => {
 
 
 export const editQRData = async (req: Request, res: Response) => {
-    console.log(`function trigger `);
-    const { id } = req.params
-    const { latitude, longitude, catagory } = req.body
-    console.log(latitude, longitude, catagory);
     try {
+        const { id } = req.params;
+        // Destructure both possible spellings from frontend to be safe
+        const { lattitude, latitude, longitude, catagory, category } = req.body;
+
         if (!id) {
-            res.status(500).json({ message: 'No qr selected', })
-            return;
+            res.status(400).json({ message: 'No QR ID provided' });
+            return
         }
-        const data = await prisma.qR.update({
+
+        // 1. Prepare data object using the correct Prisma Schema keys
+        // Schema uses 'lattitude' (two t's) and 'catagory' (with an 'a')
+        const updateData: any = {
+            longitude: longitude,
+        };
+
+        // Handle Latitude spelling mismatch
+        if (lattitude) updateData.lattitude = lattitude;
+        if (latitude) updateData.lattitude = latitude; // Map 'latitude' to 'lattitude'
+
+        // Handle Category spelling mismatch
+        if (catagory) updateData.catagory = catagory;
+        if (category) updateData.catagory = category; // Map 'category' to 'catagory'
+
+        // 2. Update in DB
+        const updatedQR = await prisma.qR.update({
             where: { id: id },
-            data: {
-                lattitude: latitude,
-                longitude: longitude,
-                catagory: catagory
-            }
-        })
+            data: updateData
+        });
 
         res.status(200).json({
-            message: "qr data updated",
+            message: "QR data updated successfully",
             success: true,
+            data: updatedQR
+        });
 
-        })
     } catch (error) {
-        res.status(500).json({ message: 'Internal Server Error', error: error })
+        console.error("Update Error:", error);
+        res.status(500).json({ message: 'Internal Server Error', error: error });
     }
 }
