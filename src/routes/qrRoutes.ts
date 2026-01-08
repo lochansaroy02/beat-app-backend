@@ -10,7 +10,7 @@ router.get("/get-all", getAllQR)
 router.get("/findQR", getQRId);
 router.post("/create", createQR)
 router.put("/scan", scanQRcode)
-router.patch('/edit/:id', editQRData)
+router.put('/edit/:id', editQRData)
 router.post("/create/bulk", createBulkQR)
 router.delete("/delete/:qrId", deleteQR)
 router.get("/get-data", getQRData)
