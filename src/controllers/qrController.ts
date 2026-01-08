@@ -177,7 +177,11 @@ export const getQR = async (req: Request, res: Response) => {
 export const getAllQR = async (req: Request, res: Response) => {
     const { userId } = req.params
     try {
-        const qrData = await prisma.qR.findMany()
+        const qrData = await prisma.qR.findMany({
+            orderBy: {
+                createdAt: 'desc'
+            }
+        })
         res.status(200).json({
             success: true,
             message: "qr data sent",
