@@ -216,21 +216,19 @@ export const getPersonData = async (req: Request, res: Response) => {
 
 export const fixData = async (req: Request, res: Response) => {
     try {
-        const { policeStation } = req.params;
+        const { ps } = req.params; //incorrecot
+        const { policeStation } = req.body //correct 
 
         if (!policeStation) {
             return res.status(400).json({ message: 'User ID is required' });
         }
 
 
-        const user = await prisma.user.findMany({
-            where: { policeStation },
-            select: {
-                id: true,
-                name: true,
-                pnoNo: true,
-                policeStation: true
-            },
+        const user = await prisma.user.updateMany({
+            where: { policeStation: ps },
+            data: {
+                policeStation: policeStation
+            }
         });
 
         if (!user) {

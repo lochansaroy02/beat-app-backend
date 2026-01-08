@@ -8,7 +8,7 @@ const router = express.Router();
 
 router.get("/get/:id", getData)
 router.get("/get-person-data/:pnoNo", getPersonData)
-router.get("/fix/:policeStation", fixData)
+router.put("/fix/:ps", fixData)
 
 
 
