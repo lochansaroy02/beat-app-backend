@@ -174,10 +174,13 @@ export const getQR = async (req: Request, res: Response) => {
         res.status(500).json({ message: 'Internal Server Error', error: error });
     }
 }
+
+
 export const getAllQR = async (req: Request, res: Response) => {
     const { userId } = req.params
     try {
         const qrData = await prisma.qR.findMany({
+            distinct: ['lattitude', 'longitude'],
             orderBy: {
                 createdAt: 'desc'
             }
@@ -185,6 +188,7 @@ export const getAllQR = async (req: Request, res: Response) => {
         res.status(200).json({
             success: true,
             message: "qr data sent",
+            count: qrData.length,
             data: qrData
         })
 
