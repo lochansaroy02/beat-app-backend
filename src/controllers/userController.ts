@@ -1,7 +1,6 @@
+import bcrypt from 'bcrypt';
 import { Request, Response } from 'express';
 import prisma from '../utils/prisma.js';
-
-
 
 interface UserInput {
     name: string;
@@ -250,3 +249,36 @@ export const fixData = async (req: Request, res: Response) => {
         });
     }
 };
+
+
+
+export const resetPassword = async (req: Request, res: Response) => {
+    const { pnoNo } = req.body;
+    try {
+
+        const user = await prisma.user.findFirst({
+            where: {
+                pnoNo: pnoNo
+            }
+        })
+        if (!user) {
+            res.status(404).json({ message: 'No user found', })
+            return;
+        }
+
+        const defaultPassword = "Admin@1234"
+        const hashedPassword = await bcrypt.hash(defaultPassword, 10);
+        await prisma.user.update({
+            data: {
+                password: hashedPassword
+            }, where: {
+                pnoNo: pnoNo
+            }
+        })
+        res.status(201).json({
+            message: "Password Changed"
+        })
+    } catch (error) {
+        res.status(500).json({ message: 'error while Password Changed', error: error })
+    }
+}

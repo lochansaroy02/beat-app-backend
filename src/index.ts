@@ -1,6 +1,6 @@
 import cors, { CorsOptions } from "cors";
 import express, { Request, Response } from "express";
-
+import ImageKit from "imagekit";
 // Routes
 import adminRoutes from "./routes/adminRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
@@ -46,6 +46,21 @@ app.use("/qr", qrRoutes);
 app.use("/photo", photosRoutes);
 app.use("/subAdmin", subAdminRoutes);
 app.use("/user", userRoutes);
+
+
+// imagekit 
+
+
+const imagekit = new ImageKit({
+    publicKey: process.env.IMAGEKIT_PUBLIC_KEY!,
+    privateKey: process.env.IMAGEKIT_PRIVATE_KEY!,
+    urlEndpoint: process.env.IMAGEKIT_URL_ENDPOINT!,
+});
+
+app.get("/imagekit-auth", (req, res) => {
+    const authParams = imagekit.getAuthenticationParameters();
+    res.json(authParams);
+});
 
 
 // Health check
