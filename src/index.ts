@@ -4,6 +4,7 @@ import ImageKit from "imagekit";
 // Routes
 import adminRoutes from "./routes/adminRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
+import imagekitRoutes from "./routes/imagekitRoutes.js";
 import photosRoutes from "./routes/photosRoutes.js";
 import qrRoutes from "./routes/qrRoutes.js";
 import subAdminRoutes from "./routes/subAdminRoutes.js";
@@ -18,6 +19,7 @@ const allowedOrigins = [
     "http://localhost:3000",
     "http://dutytrack.in",
     "https://dutytrack.in",
+    "http://localhost:8081"
 ];
 
 // ✅ CORS Options
@@ -46,6 +48,7 @@ app.use("/qr", qrRoutes);
 app.use("/photo", photosRoutes);
 app.use("/subAdmin", subAdminRoutes);
 app.use("/user", userRoutes);
+app.use("/imagekit", imagekitRoutes);
 
 
 // imagekit 
